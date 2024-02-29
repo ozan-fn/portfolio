@@ -7,7 +7,7 @@ export default function MenuDropdown({ tabs, activeTab, setActiveTab }) {
 
     return (
         <div className="relative ml-auto md:hidden">
-            <motion.button transition={{ type: "spring" }} whileTap={{ scale: 1.2 }} onClick={() => setOpen(!open)} className="rounded-lg p-2">
+            <motion.button type="button" transition={{ type: "spring" }} whileTap={{ scale: 1.2 }} onClick={() => setOpen(!open)} className="rounded-lg p-2">
                 {!open && <LuMenu className="h-6 w-6 text-gray-300" />}
                 {open && <LuTrees className="h-6 w-6 text-gray-300" />}
             </motion.button>
