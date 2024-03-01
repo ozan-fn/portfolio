@@ -676,6 +676,18 @@ video {
   width: 100%;
 }
 
+.max-w-3xl {
+  max-width: 48rem;
+}
+
+.max-w-sm {
+  max-width: 24rem;
+}
+
+.max-w-xs {
+  max-width: 20rem;
+}
+
 .flex-grow {
   flex-grow: 1;
 }
@@ -714,6 +726,10 @@ video {
   justify-content: center;
 }
 
+.gap-2 {
+  gap: 0.5rem;
+}
+
 .gap-8 {
   gap: 2rem;
 }
@@ -746,6 +762,11 @@ video {
 .rounded-l-sm {
   border-top-left-radius: 0.125rem;
   border-bottom-left-radius: 0.125rem;
+}
+
+.rounded-l-md {
+  border-top-left-radius: 0.375rem;
+  border-bottom-left-radius: 0.375rem;
 }
 
 .border {
@@ -814,6 +835,10 @@ video {
   font-family: Gagalin;
 }
 
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
 .text-2xl {
   font-size: 1.5rem;
   line-height: 2rem;
@@ -824,14 +849,21 @@ video {
   line-height: 2.5rem;
 }
 
-.text-5xl {
-  font-size: 3rem;
-  line-height: 1;
+.font-bold {
+  font-weight: 700;
+}
+
+.italic {
+  font-style: italic;
 }
 
 .text-gray-300 {
   --tw-text-opacity: 1;
   color: rgb(209 213 219 / var(--tw-text-opacity));
+}
+
+.underline {
+  text-decoration-line: underline;
 }
 
 .transition {
@@ -848,6 +880,12 @@ video {
   src: url("./assets/fonts/Gagalin-Regular.otf");
 }
 
+@media (min-width: 640px) {
+  .sm\:max-w-sm {
+    max-width: 24rem;
+  }
+}
+
 @media (min-width: 768px) {
   .md\:block {
     display: block;
@@ -857,14 +895,17 @@ video {
     display: none;
   }
 
+  .md\:max-w-3xl {
+    max-width: 48rem;
+  }
+
+  .md\:max-w-md {
+    max-width: 28rem;
+  }
+
   .md\:px-0 {
     padding-left: 0px;
     padding-right: 0px;
-  }
-
-  .md\:text-7xl {
-    font-size: 4.5rem;
-    line-height: 1;
   }
 
   .md\:text-5xl {
@@ -874,6 +915,10 @@ video {
 }
 
 @media (min-width: 1024px) {
+  .lg\:max-w-3xl {
+    max-width: 48rem;
+  }
+
   .lg\:text-6xl {
     font-size: 3.75rem;
     line-height: 1;
