@@ -57,7 +57,7 @@ export default function Skill() {
                     <p className="font-gagalin text-4xl text-gray-300/50 md:text-5xl lg:text-6xl">SKILLS?</p>
                     <div className="flex flex-row flex-wrap justify-center gap-16 pt-20">
                         {icons.map((v, i) => (
-                            <div className="flex w-28 flex-col items-center gap-1">
+                            <div key={i} className="flex w-28 flex-col items-center gap-1">
                                 <motion.div animate={{ y: ["50%", "0%"], opacity: [0, 1] }} transition={{ type: "spring", delay: i / 10 }}>
                                     {v.icon}
                                 </motion.div>

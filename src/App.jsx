@@ -5,6 +5,7 @@ import Home from "./components/Home";
 import MenuDropdown from "./components/MenuDropdown";
 import About from "./components/About";
 import Skill from "./components/Skill";
+import Contact from "./components/Contact";
 
 const tabs = [
     { id: 1, label: "Home" },
@@ -19,7 +20,7 @@ export default function App() {
 
     return (
         <>
-            <div className="flex h-screen min-h-screen flex-col overflow-x-hidden bg-gray-900">
+            <div className="flex h-screen min-h-screen flex-col overflow-x-hidden bg-gray-900 antialiased">
                 <div className="container sticky top-0 z-50 mx-auto flex min-h-16 flex-row items-center rounded-lg border-b border-gray-600 bg-gray-900 px-4 backdrop-blur-sm">
                     <p className="font-gagalin text-2xl text-gray-300">PORTFOLIO</p>
 
@@ -30,7 +31,7 @@ export default function App() {
                                 return (
                                     <div key={i} className="cursor-pointer" onClick={() => setActiveTab(v.id)}>
                                         <p>{v.label}</p>
-                                        {isActive && <motion.div transition={{ type: "spring" }} layoutId="1" className="absolute h-1 w-8 rounded-full bg-gray-300" />}
+                                        {isActive && <motion.div transition={{ type: "spring" }} layoutId="1" className="absolute h-1 w-6 rounded-full bg-gray-300" />}
                                     </div>
                                 );
                             })}
@@ -45,6 +46,7 @@ export default function App() {
                         {activeTab == "1" && <Home />}
                         {activeTab == "2" && <About />}
                         {activeTab == "3" && <Skill />}
+                        {activeTab == "5" && <Contact />}
                     </motion.div>
                 </div>
             </div>
