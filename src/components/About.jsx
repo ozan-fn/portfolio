@@ -4,7 +4,7 @@ import _ from "lodash";
 export default function About() {
     return (
         <>
-            <div className="ml-4 mt-20 flex h-full max-w-xl flex-col gap-2.5 px-4 md:ml-20 lg:px-0">
+            <div className="ml-4 flex h-full max-w-xl flex-col gap-2.5 px-4 pt-20 md:ml-20 lg:px-0">
                 <p className="font-gagalin text-4xl text-gray-300/50 md:text-5xl lg:text-6xl">WHO AM I?</p>
                 <ReactTyped className="font-gagalin text-lg" strings={["Saya adalah seorang Developer Full Stack dengan kecintaan terhadap pembuatan aplikasi web yang dinamis dan ramah pengguna."]} />
                 <ReactTyped

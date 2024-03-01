@@ -10,7 +10,7 @@ const tabs = [
     { id: 1, label: "Home" },
     { id: 2, label: "About" },
     { id: 3, label: "Skill" },
-    { id: 4, label: "Project" },
+    // { id: 4, label: "Project" },
     { id: 5, label: "Contact" },
 ];
 
@@ -20,7 +20,7 @@ export default function App() {
     return (
         <>
             <div className="flex h-screen min-h-screen flex-col overflow-x-hidden bg-gray-900">
-                <div className="container mx-auto flex h-16 flex-row items-center rounded-lg border-b border-gray-600 px-4">
+                <div className="container sticky top-0 z-50 mx-auto flex min-h-16 flex-row items-center rounded-lg border-b border-gray-600 bg-gray-900 px-4 backdrop-blur-sm">
                     <p className="font-gagalin text-2xl text-gray-300">PORTFOLIO</p>
 
                     <div className="relative ml-auto hidden text-gray-300 md:block">
