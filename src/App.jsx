@@ -3,6 +3,8 @@ import { useState } from "react";
 import { LuMenu, LuTrees } from "react-icons/lu";
 import Home from "./components/Home";
 import MenuDropdown from "./components/MenuDropdown";
+import About from "./components/About";
+import Skill from "./components/Skill";
 
 const tabs = [
     { id: 1, label: "Home" },
@@ -22,7 +24,7 @@ export default function App() {
                     <p className="font-gagalin text-2xl text-gray-300">PORTFOLIO</p>
 
                     <div className="relative ml-auto hidden text-gray-300 md:block">
-                        <div className="font-gagalin grid select-none grid-flow-col grid-cols-5 gap-8">
+                        <div className="grid select-none grid-flow-col grid-cols-5 gap-8 font-gagalin">
                             {tabs.map((v, i) => {
                                 const isActive = activeTab == v.id;
                                 return (
@@ -41,7 +43,8 @@ export default function App() {
                 <div className="flex flex-grow flex-row">
                     <motion.div key={activeTab} animate={{ opacity: [0, 1] }} exit={{ opacity: [1, 0] }} transition={{ type: "spring" }} className="container mx-auto flex-grow text-gray-300">
                         {activeTab == "1" && <Home />}
-                        {activeTab == "2" && <p>TAB 22222</p>}
+                        {activeTab == "2" && <About />}
+                        {activeTab == "3" && <Skill />}
                     </motion.div>
                 </div>
             </div>

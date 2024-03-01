@@ -3,9 +3,9 @@ import { motion } from "framer-motion";
 
 export default function Home() {
     return (
-        <div className="flex h-full items-center justify-center px-4 md:px-0">
+        <div className="ml-8 mt-20 flex h-full px-4 md:ml-20 md:px-0">
             <div className="relative flex h-fit w-full max-w-xs flex-col gap-2 sm:max-w-sm md:max-w-md lg:max-w-3xl">
-                <ReactTyped cursorChar="" className="font-gagalin select-none text-4xl md:text-5xl lg:text-6xl" strings={["AKHMAD FAUZAN"]} typeSpeed={100} />
+                <ReactTyped cursorChar="" className="select-none font-gagalin text-4xl md:text-5xl lg:text-6xl" strings={["AKHMAD FAUZAN"]} typeSpeed={100} />
                 <ReactTyped
                     className="font-bold underline"
                     loop
