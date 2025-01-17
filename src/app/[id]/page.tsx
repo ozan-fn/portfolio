@@ -1,18 +1,15 @@
-"use client";
+// File: app/[id]/page.tsx
 
 import { getOriginalUrl } from "@/actions/links";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 
-export default function ShortLinkPage() {
-	const { id }: { id: string } = useParams();
-	const [originalUrl, setOriginalUrl] = useState<string | null>("");
+interface Props {
+	params: {
+		id: string;
+	};
+}
 
-	useEffect(() => {
-		(async () => {
-			setOriginalUrl(await getOriginalUrl(id));
-		})();
-	}, []);
+const ShortLinkPage = async ({ params: { id } }: Props) => {
+	const originalUrl = await getOriginalUrl(id);
 
 	if (!originalUrl) {
 		return <h1>404 - Not Found</h1>;
@@ -27,4 +24,6 @@ export default function ShortLinkPage() {
 			</a>
 		</div>
 	);
-}
+};
+
+export default ShortLinkPage;
