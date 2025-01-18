@@ -6,11 +6,10 @@ import { notFound } from "next/navigation"; // Optional: to handle not found cas
 const ShortLinkPage = async ({ params }: { params: Promise<{ id: string }> }) => {
 	const { id } = await params;
 
-	// Fetch data dari API route
 	const data = await getOriginalUrl(id);
 
 	if (!data) {
-		notFound(); // Optional: bisa digunakan untuk melempar error 404
+		notFound();
 	}
 
 	return (

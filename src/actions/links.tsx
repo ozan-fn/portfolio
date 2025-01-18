@@ -3,11 +3,11 @@
 import prisma from "@/lib/prisma";
 import { nanoid } from "nanoid";
 
-export const createShortLink = async (url: string) => {
+export const createShortLink = async (url: string, custom = "") => {
 	const res = await prisma.link.create({
 		data: {
 			original: url,
-			shortUrl: nanoid(), // Menghasilkan string acak tanpa simbol
+			shortUrl: custom ?? nanoid(4),
 		},
 	});
 	return res;

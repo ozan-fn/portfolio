@@ -10,11 +10,12 @@ import { useState } from "react";
 export default function Home() {
 	const [loading, setLoading] = useState(false);
 	const [input, setInput] = useState("");
+	const [custom, setCustom] = useState("");
 	const [result, setResult] = useState<string | null>(null);
 
 	const handleSubmit = () => {
 		setLoading(true);
-		createShortLink(input)
+		createShortLink(input, custom)
 			.then((res) => {
 				const host = window.location.origin; // Mendapatkan host saat ini
 				const fullUrl = `${host}/${res.shortUrl}`;
@@ -29,6 +30,7 @@ export default function Home() {
 		<div className="flex h-screen items-center justify-center flex-col">
 			<div className="max-w-md w-full flex flex-row items-center gap-2">
 				<Input onChange={(e) => setInput(e.target.value)} />
+				<Input placeholder="custom" onChange={(e) => setCustom(e.target.value)} />
 				<motion.div layoutId="nasd90s-">
 					<Button onClick={handleSubmit}>{!loading ? <p>Buat Tautan</p> : <Loader2Icon className="animate-spin h-5 w-5" />}</Button>
 				</motion.div>
