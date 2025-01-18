@@ -1,25 +1,23 @@
-// File: app/[id]/page.tsx
+// app/[id]/page.tsx
 
 import { getOriginalUrl } from "@/actions/links";
+import { notFound } from "next/navigation"; // Optional: to handle not found cases
 
-interface Props {
-	params: {
-		id: string;
-	};
-}
+const ShortLinkPage = async ({ params }: { params: Promise<{ id: string }> }) => {
+	const { id } = await params;
 
-const ShortLinkPage = async ({ params: { id } }: Props) => {
-	const originalUrl = await getOriginalUrl(id);
+	// Fetch data dari API route
+	const data = await getOriginalUrl(id);
 
-	if (!originalUrl) {
-		return <h1>404 - Not Found</h1>;
+	if (!data) {
+		notFound(); // Optional: bisa digunakan untuk melempar error 404
 	}
 
 	return (
 		<div>
 			<h1>Original URL</h1>
-			<p>{originalUrl}</p>
-			<a href={originalUrl} target="_blank" rel="noopener noreferrer">
+			<p>{data}</p>
+			<a href={data} target="_blank" rel="noopener noreferrer">
 				Go to URL
 			</a>
 		</div>
