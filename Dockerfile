@@ -1,31 +1,17 @@
-# Base image
-FROM php:8.2-fpm-alpine
+FROM php:8.1-cli
 
-RUN apk add composer
-# Install dependencies and extensions
-RUN docker-php-ext-install \
-    gd \
-    intl \
-    opcache \
-    pdo \
-    pdo_pgsql \
-    zip
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install -y libicu-dev libpng-dev libzip-dev libpq-dev
+RUN docker-php-ext-install intl gd zip pgsql pdo_pgsql pdo
+RUN apt-get install -y git
 
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN rm -rf /tmp/*
 
-# Set the working directory
-WORKDIR /var/www/html
-
-# Copy application files to the container
-COPY . /var/www/html
-
-# Install dependencies using Composer
+WORKDIR /app
+COPY . .
 RUN composer install
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html
+EXPOSE 8080
 
-# Expose port 80
-EXPOSE 80
-
-# Start PHP-FPM server
-CMD ["php-fpm"]
+CMD ["php", "spark", "serve", "--port=8080"]
