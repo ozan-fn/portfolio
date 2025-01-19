@@ -5,8 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-    provider      = "prisma-client-js"
-    binaryTargets = "native"
+    provider = "prisma-client-js"
 }
 
 datasource db {
@@ -15,7 +14,7 @@ datasource db {
 }
 
 model Link {
-    id       String @id @default(auto()) @map("_id") @db.ObjectId
-    original String
-    shortUrl String @unique
+    id           String @id @default(auto()) @map("_id") @db.ObjectId
+    original_url String
+    short_url    String @unique
 }
