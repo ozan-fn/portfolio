@@ -2,7 +2,7 @@ FROM php:8.3-cli-alpine
 
 WORKDIR /var/www/html
 
-# Install ekstensi PHP yang dibutuhkan oleh CodeIgniter 4
+# Install paket sistem yang dibutuhkan, TERMASUK development headers
 RUN apk add --no-cache \
         libpng-dev \
         libjpeg-turbo-dev \
@@ -10,18 +10,24 @@ RUN apk add --no-cache \
         libzip-dev \
         zip \
         unzip \
-        icu-dev \ # Untuk intl
-        gmp-dev \ # Untuk beberapa library
-        libxslt-dev # Untuk beberapa library
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+        icu-dev \
+        gmp-dev \
+        libxslt-dev \
+        curl-dev # Untuk ekstensi curl
+
+# Install ekstensi PHP yang WAJIB dan OPTIONAL sesuai rekomendasi CI4
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
+        intl \
+        mbstring \
+        json \
         gd \
         pdo \
         pdo_mysql \
-        intl \
         zip \
         xsl \
-        gmp
+        gmp \
+        curl
 
 # Copy project CI4
 COPY . .
