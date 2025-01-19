@@ -1,12 +1,16 @@
 # Base image
-FROM php:8.1-apache
+FROM php:8.2-fpm-alpine
 
-# Install necessary extensions
-RUN apt-get update && apt-get install -y libpq-dev libicu-dev git \
-    && docker-php-ext-install pdo pdo_pgsql intl
+RUN apk add composer
+# Install dependencies and extensions
+RUN docker-php-ext-install \
+    gd \
+    intl \
+    opcache \
+    pdo \
+    pdo_pgsql \
+    zip
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set the working directory
 WORKDIR /var/www/html
@@ -15,14 +19,13 @@ WORKDIR /var/www/html
 COPY . /var/www/html
 
 # Install dependencies using Composer
-RUN composer install --no-scripts --no-autoloader
+RUN composer install
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && a2enmod rewrite
+RUN chown -R www-data:www-data /var/www/html
 
 # Expose port 80
 EXPOSE 80
 
-# Start Apache service
-CMD ["apache2-foreground"]
+# Start PHP-FPM server
+CMD ["php-fpm"]
