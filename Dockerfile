@@ -2,14 +2,11 @@
 FROM php:8.1-apache
 
 # Install necessary extensions
-RUN apt-get update && apt-get install -y libpq-dev libicu-dev \
+RUN apt-get update && apt-get install -y libpq-dev libicu-dev git \
     && docker-php-ext-install pdo pdo_pgsql intl
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Verify Composer installation
-RUN composer --version
 
 # Set the working directory
 WORKDIR /var/www/html
