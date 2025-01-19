@@ -1,42 +1,28 @@
-FROM php:8.3-cli-alpine
+# Base image
+FROM php:7.4-apache
 
+# Install necessary extensions
+RUN apt-get update && apt-get install -y libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set the working directory
 WORKDIR /var/www/html
 
-# Install paket sistem yang dibutuhkan, TERMASUK development headers
-RUN apk add --no-cache \
-        libpng-dev \
-        libjpeg-turbo-dev \
-        freetype-dev \
-        libzip-dev \
-        zip \
-        unzip \
-        icu-dev \
-        gmp-dev \
-        libxslt-dev \
-        curl-dev # Untuk ekstensi curl
+# Copy application files to the container
+COPY . /var/www/html
 
-# Install ekstensi PHP yang WAJIB dan OPTIONAL sesuai rekomendasi CI4
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-        intl \
-        mbstring \
-        json \
-        gd \
-        pdo \
-        pdo_mysql \
-        zip \
-        xsl \
-        gmp \
-        curl
+# Install dependencies using Composer
+RUN composer install
 
-# Copy project CI4
-COPY . .
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && a2enmod rewrite
 
-# Set permission yang benar (penting untuk writable directory)
-RUN chown -R www-data:www-data /var/www/html/writable
+# Expose port 80
+EXPOSE 80
 
-# Expose port yang akan digunakan
-EXPOSE 8080
-
-# Jalankan php spark serve
-CMD ["php", "spark", "serve", "--host", "0.0.0.0", "--port", "8080"]
+# Start Apache service
+CMD ["apache2-foreground"]
