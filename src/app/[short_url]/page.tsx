@@ -9,7 +9,7 @@ export default function Page({ params }: { params: Promise<{ short_url: string }
             const { short_url } = await params;
             const original_url = await getOriginalUrl(short_url);
             if (original_url) {
-                // window.location.href = original_url;
+                window.location.href = original_url;
             } else {
                 console.error("URL tidak ditemukan. Pastikan URL yang anda masukkan benar.");
             }
