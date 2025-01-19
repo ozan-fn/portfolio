@@ -2,11 +2,14 @@
 FROM php:8.1-apache
 
 # Install necessary extensions
-RUN apt-get update && apt-get install -y libpq-dev \
-    && docker-php-ext-install pdo pdo_pgsql
+RUN apt-get update && apt-get install -y libpq-dev libicu-dev \
+    && docker-php-ext-install pdo pdo_pgsql intl
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Verify Composer installation
+RUN composer --version
 
 # Set the working directory
 WORKDIR /var/www/html
@@ -15,7 +18,7 @@ WORKDIR /var/www/html
 COPY . /var/www/html
 
 # Install dependencies using Composer
-RUN composer install
+RUN composer install --no-scripts --no-autoloader
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
