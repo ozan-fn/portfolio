@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { getOriginalUrl } from "@/actions/links";
+import { Loader2Icon } from "lucide-react";
 
 export default function Page({ params }: { params: Promise<{ short_url: string }> }) {
     useEffect(() => {
@@ -18,5 +19,9 @@ export default function Page({ params }: { params: Promise<{ short_url: string }
         fetchOriginalUrl();
     }, []);
 
-    return <div>Memproses redirect...</div>;
+    return (
+        <div className="flex h-screen flex-col items-center justify-center">
+            <Loader2Icon className="h-8 w-8 animate-spin" />
+        </div>
+    );
 }

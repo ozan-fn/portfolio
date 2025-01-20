@@ -29,16 +29,19 @@
 		"prisma": "^6.2.1",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
+		"shortid": "^2.2.16",
 		"sonner": "^1.7.2",
 		"tailwind-merge": "^2.6.0",
 		"tailwind-scrollbar": "^3.1.0",
 		"tailwindcss-animate": "^1.0.7",
-		"three": "^0.172.0"
+		"three": "^0.172.0",
+		"zod": "^3.24.1"
 	},
 	"devDependencies": {
 		"@types/node": "^20",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
+		"@types/shortid": "^2.2.0",
 		"@types/three": "^0.172.0",
 		"postcss": "^8",
 		"prettier": "^3.4.2",

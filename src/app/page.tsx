@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 
 export default function Home() {
     const [loading, setLoading] = useState(false);
@@ -27,6 +28,9 @@ export default function Home() {
         });
 
         try {
+            z.string().url().parse(input);
+            if (custom) z.string().min(1).max(20).parse(custom);
+
             const res = await createShortLink(input, custom);
             toast.success("URL berhasil dipersingkat!", {
                 richColors: true,
@@ -34,12 +38,15 @@ export default function Home() {
             });
             setResult(res.short_url);
         } catch (error) {
-            console.error(error);
-            toast.error("Terjadi kesalahan. Silakan coba lagi.", {
-                richColors: true,
-                description: "URL gagal dipersingkat. Silakan coba lagi.",
-            });
+            if (error instanceof z.ZodError) {
+                console.log(error.message);
+                toast.error("Terjadi kesalahan. Silakan coba lagi.", {
+                    richColors: true,
+                    description: error.issues[0].message,
+                });
+            }
         } finally {
+            await new Promise((resolve) => setTimeout(resolve, 50));
             toast.dismiss(loadingToast);
             setLoading(false);
         }
