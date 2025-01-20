@@ -29,7 +29,6 @@ export default function Home() {
 
         try {
             z.string().url().parse(input);
-            if (custom) z.string().min(1).max(20).parse(custom);
 
             const res = await createShortLink(input, custom);
             toast.success("URL berhasil dipersingkat!", {

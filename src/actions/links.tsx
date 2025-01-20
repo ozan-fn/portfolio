@@ -6,7 +6,6 @@ import { nanoid } from "nanoid";
 
 export const createShortLink = async (url: string, custom: string = "") => {
     z.string().url().parse(url);
-    if (custom) z.string().min(1).max(20).parse(custom);
 
     const shortUrl = custom || nanoid(4);
 
