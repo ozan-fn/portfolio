@@ -12,7 +12,7 @@ export const createShortLink = async (url: string, custom: string = "") => {
     const res = await prisma.link.create({
         data: {
             original_url: url,
-            short_url: shortUrl,
+            short_code: shortUrl,
         },
     });
 
@@ -22,7 +22,7 @@ export const createShortLink = async (url: string, custom: string = "") => {
 export const getOriginalUrl = async (shortUrl: string) => {
     const res = await prisma.link.findUnique({
         where: {
-            short_url: shortUrl,
+            short_code: shortUrl,
         },
     });
 

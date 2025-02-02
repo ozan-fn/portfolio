@@ -2,7 +2,7 @@ import { S3Client, HeadBucketCommand, PutObjectCommand, GetObjectCommand, Delete
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const s3Client = new S3Client({
-    region: "us-east-005",
+    region: "ap-southeast-3",
     endpoint: "https://b0v8.sg01.idrivee2-79.com",
     credentials: {
         accessKeyId: "HFW2ImDpEJ1fmQ6fhsq3",

@@ -12,8 +12,10 @@ import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 export default function Home() {
+    const { data } = useSession();
     const [loading, setLoading] = useState(false);
     const [input, setInput] = useState("");
     const [custom, setCustom] = useState("");
@@ -35,7 +37,7 @@ export default function Home() {
                 richColors: true,
                 description: "URL Anda telah berhasil dipersingkat.",
             });
-            setResult(res.short_url);
+            setResult(res.short_code);
         } catch (error) {
             if (error instanceof z.ZodError) {
                 console.log(error.message);
@@ -105,6 +107,12 @@ export default function Home() {
 
                     <div className="ml-auto">
                         <ModeToggle />
+                    </div>
+
+                    <div className="ml-4">
+                        <></>
+                        {!data?.user && <button onClick={() => signIn("google")}>Sign In</button>}
+                        {data?.user && <button onClick={() => signOut()}>Sign Out</button>}
                     </div>
                 </div>
             </motion.div>
