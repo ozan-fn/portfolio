@@ -1,9 +1,23 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import TiptapEditor, { type TiptapEditorRef } from "@/components/TiptapEditor";
-import { getPost, savePost } from "@/services/post";
-import { Input } from "@/components/ui/input";
+'use client';
 
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useParams, useRouter } from 'next/navigation';
+import { toast } from 'sonner'; // Impor toast dari sonner
+
+// Komponen Form dari shadcn/ui
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+
+// Komponen UI Lainnya
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { MultiSelectCombobox, type Option } from '@/components/MultiSelectCombobox';
+import TiptapEditor, { type TiptapEditorRef } from '@/components/TiptapEditor';
+
+// Fungsi Service API
+import { getPost, savePost, createPost, getCategories, createCategory, getTags, createTag } from '@/services/post';
+
+// Definisi tipe data untuk form
 interface PostForm {
 	title: string;
 	content: string;
@@ -12,70 +26,202 @@ interface PostForm {
 }
 
 export default function EditForm() {
+	const params = useParams();
+	const router = useRouter();
+
+	const slug = params.slug as string;
+	const isCreateMode = slug === 'new';
+
+	// State management
 	const editorRef = useRef<TiptapEditorRef>(null);
 	const [isLoading, setIsLoading] = useState(true);
-	const { control, reset, watch } = useForm<PostForm>();
+	const [isSaving, setIsSaving] = useState(false);
+	const [categoryOptions, setCategoryOptions] = useState<Option[]>([]);
+	const [tagOptions, setTagOptions] = useState<Option[]>([]);
 
-	const getWordCount = useCallback(() => editorRef.current?.getInstance()?.storage.characterCount.words() ?? 0, [editorRef.current]);
+	// Inisialisasi React Hook Form
+	const form = useForm<PostForm>({
+		defaultValues: { title: '', content: '', tags: [], categories: [] },
+	});
+	const { reset, watch, setValue, handleSubmit, control } = form;
+
+	// Logika dan handler
+	const getWordCount = useCallback(() => editorRef.current?.getInstance()?.storage.characterCount.words() ?? 0, []);
 
 	useEffect(() => {
-		getPost().then((post) => {
-			reset({ ...post });
+		Promise.all([getCategories(), getTags()]).then(([categories, tags]) => {
+			setCategoryOptions(categories.map((c: any) => ({ value: c.id, label: c.name })));
+			setTagOptions(tags.map((t: any) => ({ value: t.id, label: t.name })));
+		});
+
+		if (isCreateMode) {
+			reset({ title: '', content: '', categories: [], tags: [] });
 			setIsLoading(false);
-		});
-	}, []);
+		} else {
+			getPost(slug).then((post) => {
+				if (post) {
+					reset({
+						title: post.title,
+						content: post.body,
+						categories: post.categories?.map((c: any) => c.id) || [],
+						tags: post.tags?.map((t: any) => t.id) || [],
+					});
+				} else if (slug !== 'new') {
+					console.warn(`Post dengan slug "${slug}" tidak ditemukan.`);
+				}
+				setIsLoading(false);
+			});
+		}
+	}, [slug, isCreateMode, reset]);
 
-	useEffect(() => {
-		const subscription = watch((values, { type }) => {
-			if (type === "change") {
-				savePost({ ...values, wordCount: getWordCount() });
+	const handleCreateTag = async (tagName: string) => {
+		try {
+			const newTag = await createTag({ name: tagName });
+			if (newTag) {
+				const newOption = { value: newTag.id, label: newTag.name };
+				setTagOptions((prev) => [...prev, newOption]);
+				const currentTags = watch('tags') || [];
+				setValue('tags', [...currentTags, newTag.id]);
+				toast.success(`Tag "${tagName}" berhasil dibuat!`);
 			}
+		} catch (error) {
+			console.error('Failed to create tag:', error);
+			toast.error('Gagal membuat tag baru.');
+		}
+	};
+
+	const handleCreateCategory = async (categoryName: string) => {
+		try {
+			const newCategory = await createCategory({ name: categoryName });
+			if (newCategory) {
+				const newOption = { value: newCategory.id, label: newCategory.name };
+				setCategoryOptions((prev) => [...prev, newOption]);
+				const currentCategories = watch('categories') || [];
+				setValue('categories', [...currentCategories, newCategory.id]);
+				toast.success(`Kategori "${categoryName}" berhasil dibuat!`);
+			}
+		} catch (error) {
+			console.error('Failed to create category:', error);
+			toast.error('Gagal membuat kategori baru.');
+		}
+	};
+
+	const onSubmit = async (data: PostForm) => {
+		setIsSaving(true);
+		const postData = { ...data, content: data.content, wordCount: getWordCount() };
+
+		const promise = () =>
+			new Promise(async (resolve, reject) => {
+				try {
+					if (isCreateMode) {
+						const newPost = await createPost(postData);
+						resolve(newPost);
+					} else {
+						const updatedPost = await savePost(slug, postData);
+						resolve(updatedPost);
+					}
+				} catch (error) {
+					reject(error);
+				}
+			});
+
+		toast.promise(promise(), {
+			loading: 'Menyimpan postingan...',
+			success: (post: any) => {
+				setIsSaving(false);
+				if (isCreateMode) {
+					router.push(`/dashboard/posts/edit/${post.slug}`);
+				}
+				return `Postingan berhasil ${isCreateMode ? 'dibuat' : 'disimpan'}!`;
+			},
+			error: (err) => {
+				setIsSaving(false);
+				console.error(err);
+				return 'Gagal menyimpan postingan.';
+			},
 		});
+	};
 
-		return () => subscription.unsubscribe();
-	}, [watch]);
-
-	if (isLoading) return;
+	if (isLoading) return <div className="p-8 text-center">Loading editor...</div>;
 
 	return (
-		<div className="flex flex-col gap-6">
-			<div>
-				<label className="inline-block font-medium dark:text-white mb-2">Title</label>
-				<Controller control={control} name="title" render={({ field }) => <Input {...field} type="text" className="w-full px-4 py-2.5 shadow border border-[#d1d9e0] rounded-md bg-white  dark:border-[#3d444d] outline-none" placeholder="Enter post title..." />} />
-			</div>
+		<Form {...form}>
+			<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+				<FormField
+					control={control}
+					name="title"
+					rules={{ required: 'Judul wajib diisi' }}
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel className="dark:text-white">Title</FormLabel>
+							<FormControl>
+								<Input className="bg-background" placeholder="Enter post title..." {...field} />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
 
-			<div>
-				<label className="inline-block font-medium dark:text-white mb-2">Tags</label>
-				<Controller control={control} name="tags" render={({ field }) => <Input {...field} type="text" className="w-full px-4 py-2.5 shadow border border-[#d1d9e0] rounded-md bg-white  dark:border-[#3d444d] outline-none" placeholder="Enter tags title..." />} />
-			</div>
+				<FormField
+					control={control}
+					name="categories"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel className="dark:text-white">Categories</FormLabel>
+							<FormControl>
+								<MultiSelectCombobox options={categoryOptions} value={field.value || []} onChange={field.onChange} onCreate={handleCreateCategory} placeholder="Select or create categories..." />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
 
-			<div>
-				<label className="inline-block font-medium dark:text-white mb-2">Categories</label>
-				<Controller control={control} name="categories" render={({ field }) => <Input {...field} type="text" className="w-full px-4 py-2.5 shadow border border-[#d1d9e0] rounded-md bg-white  dark:border-[#3d444d] outline-none" placeholder="Enter categories title..." />} />
-			</div>
+				<FormField
+					control={control}
+					name="tags"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel className="dark:text-white">Tags</FormLabel>
+							<FormControl>
+								<MultiSelectCombobox options={tagOptions} value={field.value || []} onChange={field.onChange} onCreate={handleCreateTag} placeholder="Select or create tags..." />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
 
-			<div>
-				<label className="inline-block font-medium dark:text-white mb-2">Content</label>
-				<Controller
+				<FormField
 					control={control}
 					name="content"
 					render={({ field }) => (
-						<TiptapEditor
-							ref={editorRef}
-							ssr={true}
-							output="html"
-							placeholder={{
-								paragraph: "Type your content here...",
-								imageCaption: "Type caption for image (optional)",
-							}}
-							contentMinHeight={256}
-							contentMaxHeight={640}
-							onContentChange={field.onChange}
-							initialContent={field.value}
-						/>
+						<FormItem>
+							<FormLabel className="dark:text-white">Content</FormLabel>
+							<FormControl>
+								<TiptapEditor
+									ref={editorRef}
+									onContentChange={field.onChange}
+									initialContent={field.value}
+									ssr={true}
+									output="html"
+									placeholder={{
+										paragraph: 'Type your content here...',
+										imageCaption: 'Type caption for image (optional)',
+									}}
+									contentMinHeight={256}
+									contentMaxHeight={640}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
 					)}
 				/>
-			</div>
-		</div>
+
+				<div className="mt-4 flex justify-end">
+					<Button type="submit" disabled={isSaving}>
+						{isSaving ? 'Menyimpan...' : isCreateMode ? 'Publikasikan Post' : 'Simpan Perubahan'}
+					</Button>
+				</div>
+			</form>
+		</Form>
 	);
 }

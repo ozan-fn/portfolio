@@ -1,6 +1,7 @@
 import { JetBrains_Mono, Open_Sans } from 'next/font/google';
 import { Metadata } from 'next';
 import Provider from '@/providers/provider';
+import { Toaster } from '@/components/ui/sonner';
 
 const fontMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
 const fontSans = Open_Sans({ subsets: ['latin'], variable: '--font-sans' });
@@ -33,7 +34,10 @@ export default function RootLayout({
 	return (
 		<html lang="en" className={`${fontMono.variable} ${fontSans.variable}`}>
 			<body>
-				<Provider>{children}</Provider>
+				<Provider>
+					{children}
+					<Toaster richColors position="top-right" />{' '}
+				</Provider>
 			</body>
 		</html>
 	);
