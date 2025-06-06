@@ -17,7 +17,7 @@ export async function POST(request: Request) {
 		const userId = session.user.id;
 		const body = await request.json();
 		// Pastikan 'categories' dan 'tags' adalah array of IDs
-		const { title, content, categories, tags } = body;
+		const { title, content, cover, categories, tags } = body;
 
 		if (!title) {
 			return NextResponse.json({ error: 'Title is required' }, { status: 400 });
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 				body: content, // Sesuaikan dengan nama field di skema Anda (body atau content)
 				status: 'PUBLISHED', // Status awal post
 				userId: userId, // ID pengguna yang membuat post
-
+				cover,
 				// Membuat relasi many-to-many dengan Kategori
 				PostCategory: {
 					create: ((categories as string[]) || []).map((catId: string) => ({

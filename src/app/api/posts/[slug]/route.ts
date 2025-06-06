@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { authOptions } from '../../auth/[...nextauth]/route'; // Pastikan path ini benar
 import { getServerSession } from 'next-auth/next'; // Untuk NextAuth v4
+import slug from 'slug';
 
 // Handler untuk GET: Mengambil satu post berdasarkan slug
 export async function GET(request: Request, { params }: { params: { slug: string } }) {
@@ -11,24 +12,24 @@ export async function GET(request: Request, { params }: { params: { slug: string
 		const post = await prisma.post.findUnique({
 			where: { slug: params.slug },
 			include: {
+				// <<< PERUBAHAN: Tambahkan ini untuk menyertakan data Penulis
+				User: {
+					select: {
+						name: true,
+						// Anda mungkin juga ingin mengirim gambar profil penulis
+						// image: true,
+					},
+				},
 				PostCategory: {
 					select: {
-						category: {
-							select: { id: true, name: true },
-						},
+						category: { select: { id: true, name: true, slug: true } },
 					},
 				},
 				PostTag: {
 					select: {
-						tag: {
-							select: { id: true, name: true },
-						},
+						tag: { select: { id: true, name: true, slug: true } },
 					},
 				},
-				// Anda mungkin ingin menyertakan data User (penulis) juga
-				// User: {
-				//  select: { id: true, name: true, image: true }
-				// }
 			},
 		});
 
@@ -80,7 +81,7 @@ export async function PUT(request: Request, { params }: { params: { slug: string
 		}
 
 		const body = await request.json();
-		const { title, content, categories, tags } = body; // 'content' harusnya 'body' sesuai skema?
+		const { title, content, categories, tags, cover } = body; // 'content' harusnya 'body' sesuai skema?
 
 		if (!title || !content) {
 			return NextResponse.json({ error: 'Title and content are required' }, { status: 400 });
@@ -102,7 +103,8 @@ export async function PUT(request: Request, { params }: { params: { slug: string
 					title,
 					body: content, // Pastikan ini sesuai dengan field di skema (body atau content)
 					// Jika Anda ingin slug diperbarui saat judul berubah:
-					// slug: slug(title), // Anda perlu mengimpor fungsi slug dan memastikan keunikannya
+					slug: slug(title), // Anda perlu mengimpor fungsi slug dan memastikan keunikannya
+					cover: cover,
 					PostCategory: {
 						create: ((categories as string[]) || []).map((catId: string) => ({
 							categoryId: catId,

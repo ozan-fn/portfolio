@@ -5,12 +5,12 @@ import bcrypt from 'bcrypt';
 import { type DefaultSession } from 'next-auth';
 import prisma from '@/lib/prisma';
 import { AuthOptions } from 'next-auth';
+import { User } from '@prisma/client';
+import { AdapterUser } from 'next-auth/adapters';
 
 declare module 'next-auth' {
 	interface Session extends DefaultSession {
-		user: {
-			id: string;
-		} & DefaultSession['user'];
+		user: DefaultSession['user'] & User;
 	}
 }
 
@@ -68,6 +68,7 @@ export const authOptions: AuthOptions = {
 					name: user.name,
 					email: user.email,
 					picture: user.picture,
+					role: user.role,
 				};
 			},
 		}),

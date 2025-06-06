@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams, useRouter } from 'next/navigation';
-import { toast } from 'sonner'; // Impor toast dari sonner
+import { toast } from 'sonner';
+import cslug from 'slug';
 
 // Komponen Form dari shadcn/ui
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -11,11 +12,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 // Komponen UI Lainnya
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { MultiSelectCombobox, type Option } from '@/components/MultiSelectCombobox';
+import { MultiSelect, type Option } from '@/components/MultiSelect';
 import TiptapEditor, { type TiptapEditorRef } from '@/components/TiptapEditor';
 
 // Fungsi Service API
-import { getPost, savePost, createPost, getCategories, createCategory, getTags, createTag } from '@/services/post';
+// [BARU] Asumsikan Anda punya service untuk upload gambar
+import { getPost, savePost, createPost, getCategories, createCategory, getTags, createTag, uploadImage } from '@/services/post';
 
 // Definisi tipe data untuk form
 interface PostForm {
@@ -23,6 +25,7 @@ interface PostForm {
 	content: string;
 	tags: string[];
 	categories: string[];
+	cover: string; // [BARU] Menambahkan properti cover
 }
 
 export default function EditForm() {
@@ -41,12 +44,34 @@ export default function EditForm() {
 
 	// Inisialisasi React Hook Form
 	const form = useForm<PostForm>({
-		defaultValues: { title: '', content: '', tags: [], categories: [] },
+		// [DIUBAH] Menambahkan cover ke defaultValues
+		defaultValues: { title: '', content: '', tags: [], categories: [], cover: '' },
 	});
 	const { reset, watch, setValue, handleSubmit, control } = form;
 
 	// Logika dan handler
 	const getWordCount = useCallback(() => editorRef.current?.getInstance()?.storage.characterCount.words() ?? 0, []);
+
+	// [BARU] Handler untuk upload gambar cover
+	const handleCoverUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (!file) return;
+
+		const toastId = toast.loading('Mengunggah gambar cover...');
+
+		try {
+			// Panggil service upload Anda di sini.
+			// Service ini harusnya mengembalikan URL gambar yang telah diunggah.
+			const imageUrl = await uploadImage(file);
+
+			// Set nilai 'cover' di form dengan URL yang didapat
+			setValue('cover', imageUrl, { shouldValidate: true });
+			toast.success('Cover berhasil diunggah!', { id: toastId });
+		} catch (error) {
+			console.error('Gagal mengunggah cover:', error);
+			toast.error('Gagal mengunggah cover.', { id: toastId });
+		}
+	};
 
 	useEffect(() => {
 		Promise.all([getCategories(), getTags()]).then(([categories, tags]) => {
@@ -55,16 +80,19 @@ export default function EditForm() {
 		});
 
 		if (isCreateMode) {
-			reset({ title: '', content: '', categories: [], tags: [] });
+			// [DIUBAH] Reset dengan field cover
+			reset({ title: '', content: '', categories: [], tags: [], cover: '' });
 			setIsLoading(false);
 		} else {
 			getPost(slug).then((post) => {
 				if (post) {
+					// [DIUBAH] Reset form dengan data cover dari post
 					reset({
 						title: post.title,
 						content: post.body,
 						categories: post.categories?.map((c: any) => c.id) || [],
 						tags: post.tags?.map((t: any) => t.id) || [],
+						cover: post.cover || '', // Ambil URL cover dari data post
 					});
 				} else if (slug !== 'new') {
 					console.warn(`Post dengan slug "${slug}" tidak ditemukan.`);
@@ -74,6 +102,7 @@ export default function EditForm() {
 		}
 	}, [slug, isCreateMode, reset]);
 
+	// ... (Fungsi handleCreateTag dan handleCreateCategory tetap sama) ...
 	const handleCreateTag = async (tagName: string) => {
 		try {
 			const newTag = await createTag({ name: tagName });
@@ -108,6 +137,7 @@ export default function EditForm() {
 
 	const onSubmit = async (data: PostForm) => {
 		setIsSaving(true);
+		// [DIUBAH] data sudah mengandung 'cover', jadi tidak perlu diubah di sini
 		const postData = { ...data, content: data.content, wordCount: getWordCount() };
 
 		const promise = () =>
@@ -117,6 +147,7 @@ export default function EditForm() {
 						const newPost = await createPost(postData);
 						resolve(newPost);
 					} else {
+						// Pastikan service `savePost` bisa handle field `cover`
 						const updatedPost = await savePost(slug, postData);
 						resolve(updatedPost);
 					}
@@ -130,7 +161,10 @@ export default function EditForm() {
 			success: (post: any) => {
 				setIsSaving(false);
 				if (isCreateMode) {
-					router.push(`/dashboard/posts/edit/${post.slug}`);
+					router.push(`/blog/edit/${post.slug}`);
+				}
+				if (slug !== post.slug) {
+					router.push(`/blog/edit/${post.slug}`);
 				}
 				return `Postingan berhasil ${isCreateMode ? 'dibuat' : 'disimpan'}!`;
 			},
@@ -162,6 +196,32 @@ export default function EditForm() {
 					)}
 				/>
 
+				{/* [BARU] FormField untuk Cover Image */}
+				<FormField
+					control={control}
+					name="cover"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel className="dark:text-white">Cover Image</FormLabel>
+							{/* Pratinjau Gambar */}
+							{watch('cover') && (
+								<div className="mt-2 overflow-hidden rounded-md border">
+									<img src={watch('cover')} alt="Cover preview" className="h-auto w-full max-w-sm" />
+								</div>
+							)}
+							<FormControl>
+								<Input
+									type="file"
+									accept="image/*"
+									onChange={handleCoverUpload}
+									className="cursor-pointer bg-background file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground hover:file:bg-primary/90"
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
 				<FormField
 					control={control}
 					name="categories"
@@ -169,7 +229,7 @@ export default function EditForm() {
 						<FormItem>
 							<FormLabel className="dark:text-white">Categories</FormLabel>
 							<FormControl>
-								<MultiSelectCombobox options={categoryOptions} value={field.value || []} onChange={field.onChange} onCreate={handleCreateCategory} placeholder="Select or create categories..." />
+								<MultiSelect options={categoryOptions} value={field.value || []} onChange={field.onChange} onCreate={handleCreateCategory} placeholder="Select or create categories..." />
 							</FormControl>
 							<FormMessage />
 						</FormItem>
@@ -183,7 +243,7 @@ export default function EditForm() {
 						<FormItem>
 							<FormLabel className="dark:text-white">Tags</FormLabel>
 							<FormControl>
-								<MultiSelectCombobox options={tagOptions} value={field.value || []} onChange={field.onChange} onCreate={handleCreateTag} placeholder="Select or create tags..." />
+								<MultiSelect options={tagOptions} value={field.value || []} onChange={field.onChange} onCreate={handleCreateTag} placeholder="Select or create tags..." />
 							</FormControl>
 							<FormMessage />
 						</FormItem>

@@ -38,6 +38,7 @@ model Post {
     userId    String     @db.ObjectId
     title     String
     slug      String     @unique
+    cover     String
     body      String
     status    PostStatus @default(DRAFT)
     createdAt DateTime   @default(now())

@@ -78,3 +78,23 @@ export const createTag = async (data: { name: string }): Promise<any> => {
 	if (!res.ok) throw new Error('Failed to create tag');
 	return res.json();
 };
+
+// di dalam @/services/post.ts
+export async function uploadImage(file: File): Promise<string> {
+	const formData = new FormData();
+	formData.append('file', file);
+
+	// Ganti '/api/upload' dengan endpoint API Anda untuk upload
+	const response = await fetch('/api/images', {
+		method: 'POST',
+		body: formData,
+	});
+
+	if (!response.ok) {
+		throw new Error('Upload failed');
+	}
+
+	const result = await response.json();
+	// Asumsikan API mengembalikan objek dengan properti 'url'
+	return result.url;
+}
