@@ -11,11 +11,12 @@ export async function middleware(request: NextRequest) {
     // THIS IS NOT SECURE!
     // This is the recommended approach to optimistically redirect users
     // We recommend handling auth checks in each page/route
-    if (!session) {
+    if (!session && returnUrl !== "/sign-in") {
         return NextResponse.redirect(new URL(`/sign-in?returnUrl=${encodeURIComponent(returnUrl)}`, request.url));
     }
 
-    if (returnUrl === "/sign-in") {
+    // Jika ada session dan user mencoba ke /sign-in → redirect ke /admin
+    if (session && returnUrl === "/sign-in") {
         return NextResponse.redirect(new URL("/admin", request.url));
     }
 
@@ -23,6 +24,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    runtime: "nodejs", // Required for auth.api calls
-    matcher: ["/sign-in", "/admin"], // Specify the routes the middleware applies to
+    runtime: "nodejs",
+    matcher: ["/sign-in", "/admin"],
 };
