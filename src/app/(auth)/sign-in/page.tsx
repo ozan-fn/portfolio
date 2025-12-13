@@ -12,16 +12,14 @@ export default function Login() {
 
     const handleGoogleSignin = async () => {
         setLoading(true);
+
+        const returnUrl = new URLSearchParams(window.location.search).get("returnUrl");
         await authClient.signIn.social(
             {
                 provider: "google",
+                callbackURL: returnUrl || "/admin",
             },
             {
-                // onSuccess: () => {
-                //     const returnUrl = new URLSearchParams(window.location.search).get("returnUrl");
-                //     router.push(returnUrl || "/admin");
-                //     setLoading(false);
-                // },
                 onError: () => {
                     setLoading(false);
                 },
