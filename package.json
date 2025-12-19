@@ -6,8 +6,7 @@
         "dev": "next dev",
         "build": "next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/ && cp -r prisma .next/standalone/",
         "start": "next start",
-        "lint": "eslint",
-        "prebuild": "prisma generate"
+        "lint": "eslint"
     },
     "dependencies": {
         "@prisma/adapter-neon": "^7.1.0",
