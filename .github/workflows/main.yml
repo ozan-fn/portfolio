@@ -3,7 +3,7 @@ name: Build and Release Next.js Standalone
 on:
     push:
         branches:
-            - main # jalan setiap push ke main
+            - main # jalan setiap push ke mainw
 
 jobs:
     build:
