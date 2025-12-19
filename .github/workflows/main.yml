@@ -38,5 +38,7 @@ jobs:
               uses: softprops/action-gh-release@v2
               with:
                   files: nextjs-standalone.zip
+                  tag_name: latest 
+                  name: "Latest Build"
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
