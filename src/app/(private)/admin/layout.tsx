@@ -1,25 +1,21 @@
-"use client";
+import Link from "next/link";
+import { ReactNode } from "react";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
+import LogoutButton from "@/components/LogoutButton";
 
-import { Button } from "@/components/ui/button";
-import { Loader2Icon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { ReactNode, useState } from "react";
-import { authClient } from "@/lib/auth-client";
+export default async function Layout(props: { children: ReactNode }) {
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
 
-export default function Layout(props: { children: ReactNode }) {
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
-
-    const handleLogout = async () => {
-        setLoading(true);
-        try {
-            await authClient.signOut();
-            router.push("/");
-        } catch (error) {
-            setLoading(false);
-            // Optionally handle the error (e.g. show a notification)
-        }
-    };
+    if (!session || session.user.role !== "admin") {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <h1>You do not have permission to access this page.</h1>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -27,12 +23,20 @@ export default function Layout(props: { children: ReactNode }) {
                 <div className="flex-1 overflow-auto flex flex-col">{props.children}</div>
             </div>
 
-            <div className="fixed flex flex-col h-screen w-64 border-r bg-background top-0 left-0">
+            <div className="fixed flex flex-col h-screen pt-16 w-64 border-r bg-background top-0 left-0">
+                <div className="p-3">
+                    <h2 className="text-lg font-semibold">Admin Panel</h2>
+                    <nav className="space-y-2 mt-4">
+                        <Link href="/admin" className="block p-2 rounded hover:bg-accent">
+                            Dashboard
+                        </Link>
+                        <Link href="/admin/posts" className="block p-2 rounded hover:bg-accent">
+                            Posts
+                        </Link>
+                    </nav>
+                </div>
                 <div className="mt-auto p-3">
-                    <Button onClick={handleLogout} disabled={loading} variant="outline" className="w-full ">
-                        {loading && <Loader2Icon className="w-4 h-4 animate-spin" />}
-                        {loading ? "Logging out..." : "logout coy"}
-                    </Button>
+                    <LogoutButton />
                 </div>
             </div>
 
