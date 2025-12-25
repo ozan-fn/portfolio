@@ -7,26 +7,12 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 export default function Admin() {
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
-
-    const handleLogout = async () => {
-        setLoading(true);
-        try {
-            await authClient.signOut();
-            router.push("/");
-        } catch (error) {
-            setLoading(false);
-            // Optionally handle the error (e.g. show a notification)
-        }
-    };
-
     return (
         <>
-            <Button onClick={handleLogout} disabled={loading} variant="outline" className="w-full max-w-xs">
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {loading ? "Logging out..." : "logout coy"}
-            </Button>
+            <div className="flex flex-col justify-center items-center flex-1">
+                <div className="text-xl font-bold">Admin Panel</div>
+                <div className="text-sm text-muted-foreground">Welcome, Admin!</div>
+            </div>
         </>
     );
 }
