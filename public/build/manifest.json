@@ -1,0 +1,95 @@
+{
+  "_app-layout-CHKBBuKH.js": {
+    "file": "assets/app-layout-CHKBBuKH.js",
+    "name": "app-layout",
+    "imports": [
+      "app/views/js/app.jsx",
+      "_button-BnCM2v8m.js"
+    ]
+  },
+  "_button-BnCM2v8m.js": {
+    "file": "assets/button-BnCM2v8m.js",
+    "name": "button",
+    "imports": [
+      "app/views/js/app.jsx"
+    ]
+  },
+  "_input-error-D4J2_jZE.js": {
+    "file": "assets/input-error-D4J2_jZE.js",
+    "name": "input-error",
+    "imports": [
+      "app/views/js/app.jsx",
+      "_button-BnCM2v8m.js"
+    ]
+  },
+  "app/views/js/app.jsx": {
+    "file": "assets/app-BlEbcxbM.js",
+    "name": "app",
+    "src": "app/views/js/app.jsx",
+    "isEntry": true,
+    "dynamicImports": [
+      "app/views/js/pages/auth/login.jsx",
+      "app/views/js/pages/auth/register.jsx",
+      "app/views/js/pages/dashboard.jsx",
+      "app/views/js/pages/profile/update.jsx",
+      "app/views/js/pages/welcome.jsx"
+    ],
+    "css": [
+      "assets/app-DFdh9lQV.css"
+    ]
+  },
+  "app/views/js/pages/auth/login.jsx": {
+    "file": "assets/login-DSWBSKDV.js",
+    "name": "login",
+    "src": "app/views/js/pages/auth/login.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "app/views/js/app.jsx",
+      "_button-BnCM2v8m.js",
+      "_input-error-D4J2_jZE.js"
+    ]
+  },
+  "app/views/js/pages/auth/register.jsx": {
+    "file": "assets/register-DdymX5hA.js",
+    "name": "register",
+    "src": "app/views/js/pages/auth/register.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "app/views/js/app.jsx",
+      "_button-BnCM2v8m.js",
+      "_input-error-D4J2_jZE.js"
+    ]
+  },
+  "app/views/js/pages/dashboard.jsx": {
+    "file": "assets/dashboard-Dtg_6T_8.js",
+    "name": "dashboard",
+    "src": "app/views/js/pages/dashboard.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "app/views/js/app.jsx",
+      "_app-layout-CHKBBuKH.js",
+      "_button-BnCM2v8m.js"
+    ]
+  },
+  "app/views/js/pages/profile/update.jsx": {
+    "file": "assets/update-w-CwPVj3.js",
+    "name": "update",
+    "src": "app/views/js/pages/profile/update.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "app/views/js/app.jsx",
+      "_app-layout-CHKBBuKH.js",
+      "_input-error-D4J2_jZE.js",
+      "_button-BnCM2v8m.js"
+    ]
+  },
+  "app/views/js/pages/welcome.jsx": {
+    "file": "assets/welcome-BoX5AS9l.js",
+    "name": "welcome",
+    "src": "app/views/js/pages/welcome.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "app/views/js/app.jsx"
+    ]
+  }
+}
