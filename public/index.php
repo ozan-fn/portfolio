@@ -1,65 +1,43 @@
 <?php
 
-$appPath = dirname(__DIR__);
-
-/*
-|--------------------------------------------------------------------------
-| Switch to root path
-|--------------------------------------------------------------------------
-|
-| Point to the application root directory so leaf can accurately
-| resolve app paths.
-|
-*/
-chdir($appPath);
+// Deteksi path secara dinamis
+// Jika file ini ada di public/index.php, maka naik 1 tingkat ke root
+$appPath = realpath(__DIR__ . '/../');
 
 /*
 |--------------------------------------------------------------------------
 | Register The Auto Loader
 |--------------------------------------------------------------------------
-|
-| Composer provides a convenient, automatically generated class loader
-| for our application. We just need to utilize it! We'll require it
-| into the script here so that we do not have to worry about the
-| loading of any our classes "manually". Feels great to relax.
-|
 */
-require "$appPath/vendor/autoload.php";
+require $appPath . '/vendor/autoload.php';
 
 /*
 |--------------------------------------------------------------------------
-| Load application paths
+| Switch to root path (DIBUTUHKAN OLEH LEAF CORE)
 |--------------------------------------------------------------------------
-|
-| Decline static file requests back to the PHP built-in webserver
-|
+*/
+chdir($appPath);
+
+/*
+|--------------------------------------------------------------------------
+| Handle Static Files (CLI Server Only)
+|--------------------------------------------------------------------------
 */
 if (php_sapi_name() === 'cli-server') {
     $path = realpath(__DIR__ . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
-
     if (is_string($path) && __FILE__ !== $path && is_file($path)) {
         return false;
     }
-
-    unset($path);
 }
 
 /*
 |--------------------------------------------------------------------------
-| Bring in (env)
+| Load Env & Run
 |--------------------------------------------------------------------------
-|
-| Load our environment variables into our application context
-|
 */
 \Leaf\Core::loadApplicationEnv($appPath);
 
-/*
-|--------------------------------------------------------------------------
-| Run your Leaf MVC application
-|--------------------------------------------------------------------------
-|
-| This line brings in all your routes and starts your application
-|
-*/
+// Tambahkan config manual untuk meyakinkan Leaf di mana folder app berada
+\Leaf\Config::set('app.root', $appPath);
+
 \Leaf\Core::runApplication();

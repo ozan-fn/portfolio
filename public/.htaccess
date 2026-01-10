@@ -1,22 +1,21 @@
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
-        # Mencegah server mencoba menebak file jika tidak ditemukan
         Options -MultiViews -Indexes
     </IfModule>
 
     RewriteEngine On
 
-    # Jalankan RewriteBase jika aplikasi berada di subfolder, 
-    # jika di root (domain utama), biarkan "/"
-    RewriteBase /
-
-    # Handle Authorization Header (Penting jika Anda pakai API/JWT)
+    # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Jika file yang diminta tidak ada secara fisik...
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Handle Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
-    # ...maka arahkan semuanya ke index.php
     RewriteRule ^ index.php [L]
 </IfModule>
