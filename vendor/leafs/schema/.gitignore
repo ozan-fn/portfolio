@@ -1,7 +1,0 @@
-test
-vendor
-composer.lock
-
-# Alchemy
-.alchemy
-.phpunit.result.cache

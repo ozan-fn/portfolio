@@ -1,43 +1,20 @@
 <?php
 
-// Deteksi path secara dinamis
-// Jika file ini ada di public/index.php, maka naik 1 tingkat ke root
-$appPath = realpath(__DIR__ . '/../');
+use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
 
-/*
-|--------------------------------------------------------------------------
-| Register The Auto Loader
-|--------------------------------------------------------------------------
-*/
-require $appPath . '/vendor/autoload.php';
+define('LARAVEL_START', microtime(true));
 
-/*
-|--------------------------------------------------------------------------
-| Switch to root path (DIBUTUHKAN OLEH LEAF CORE)
-|--------------------------------------------------------------------------
-*/
-chdir($appPath);
-
-/*
-|--------------------------------------------------------------------------
-| Handle Static Files (CLI Server Only)
-|--------------------------------------------------------------------------
-*/
-if (php_sapi_name() === 'cli-server') {
-    $path = realpath(__DIR__ . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
-    if (is_string($path) && __FILE__ !== $path && is_file($path)) {
-        return false;
-    }
+// Determine if the application is in maintenance mode...
+if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
+    require $maintenance;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Load Env & Run
-|--------------------------------------------------------------------------
-*/
-\Leaf\Core::loadApplicationEnv($appPath);
+// Register the Composer autoloader...
+require __DIR__.'/../vendor/autoload.php';
 
-// Tambahkan config manual untuk meyakinkan Leaf di mana folder app berada
-\Leaf\Config::set('app.root', $appPath);
+// Bootstrap Laravel and handle the request...
+/** @var Application $app */
+$app = require_once __DIR__.'/../bootstrap/app.php';
 
-\Leaf\Core::runApplication();
+$app->handleRequest(Request::capture());

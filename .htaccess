@@ -1,2 +1,11 @@
-RewriteEngine On
-RewriteRule ^(.*)$ public/$1 [L]
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 1. Jika orang mengetik /public/ secara manual, hilangkan /public/ dari URL
+    RewriteCond %{THE_REQUEST} /public/([^\s?]*) [NC]
+    RewriteRule ^ %1 [L,R=301]
+
+    # 2. Jika file/folder tidak ada di root, arahkan ke folder public
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
