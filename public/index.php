@@ -1,5 +1,5 @@
 <?php
-
+echo 'asdasdasdasd';
 $appPath = dirname(__DIR__);
 
 /*
@@ -53,9 +53,7 @@ if (php_sapi_name() === 'cli-server') {
 |
 */
 \Leaf\Core::loadApplicationEnv($appPath);
-app()->config([
-    'debug' => true
-]);
+
 /*
 |--------------------------------------------------------------------------
 | Run your Leaf MVC application
