@@ -1,0 +1,23 @@
+{
+  "app/views/js/app.jsx": {
+    "file": "assets/app-BXbwOzG1.js",
+    "name": "app",
+    "src": "app/views/js/app.jsx",
+    "isEntry": true,
+    "dynamicImports": [
+      "app/views/js/pages/welcome.jsx"
+    ],
+    "css": [
+      "assets/app-CSqEw_CC.css"
+    ]
+  },
+  "app/views/js/pages/welcome.jsx": {
+    "file": "assets/welcome-jXG4pzVF.js",
+    "name": "welcome",
+    "src": "app/views/js/pages/welcome.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "app/views/js/app.jsx"
+    ]
+  }
+}
