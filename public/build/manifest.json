@@ -1,23 +1,23 @@
 {
-  "resources/js/Features/Home/Welcome.jsx": {
-    "file": "assets/Welcome-Itp4Rljc.js",
-    "name": "Welcome",
-    "src": "resources/js/Features/Home/Welcome.jsx",
-    "isDynamicEntry": true,
-    "imports": [
-      "resources/js/app.jsx"
-    ]
-  },
-  "resources/js/app.jsx": {
-    "file": "assets/app-Cs_QdJxl.js",
+  "app/views/js/app.jsx": {
+    "file": "assets/app-BXbwOzG1.js",
     "name": "app",
-    "src": "resources/js/app.jsx",
+    "src": "app/views/js/app.jsx",
     "isEntry": true,
     "dynamicImports": [
-      "resources/js/Features/Home/Welcome.jsx"
+      "app/views/js/pages/welcome.jsx"
     ],
     "css": [
-      "assets/app-C0TRzCtA.css"
+      "assets/app-CSqEw_CC.css"
+    ]
+  },
+  "app/views/js/pages/welcome.jsx": {
+    "file": "assets/welcome-jXG4pzVF.js",
+    "name": "welcome",
+    "src": "app/views/js/pages/welcome.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "app/views/js/app.jsx"
     ]
   }
 }

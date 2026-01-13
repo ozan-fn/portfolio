@@ -1,20 +1,65 @@
 <?php
 
-use Illuminate\Foundation\Application;
-use Illuminate\Http\Request;
+$appPath = dirname(__DIR__);
 
-define('LARAVEL_START', microtime(true));
+/*
+|--------------------------------------------------------------------------
+| Switch to root path
+|--------------------------------------------------------------------------
+|
+| Point to the application root directory so leaf can accurately
+| resolve app paths.
+|
+*/
+chdir($appPath);
 
-// Determine if the application is in maintenance mode...
-if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
-    require $maintenance;
+/*
+|--------------------------------------------------------------------------
+| Register The Auto Loader
+|--------------------------------------------------------------------------
+|
+| Composer provides a convenient, automatically generated class loader
+| for our application. We just need to utilize it! We'll require it
+| into the script here so that we do not have to worry about the
+| loading of any our classes "manually". Feels great to relax.
+|
+*/
+require "$appPath/vendor/autoload.php";
+
+/*
+|--------------------------------------------------------------------------
+| Load application paths
+|--------------------------------------------------------------------------
+|
+| Decline static file requests back to the PHP built-in webserver
+|
+*/
+if (php_sapi_name() === 'cli-server') {
+    $path = realpath(__DIR__ . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+
+    if (is_string($path) && __FILE__ !== $path && is_file($path)) {
+        return false;
+    }
+
+    unset($path);
 }
 
-// Register the Composer autoloader...
-require __DIR__.'/../vendor/autoload.php';
+/*
+|--------------------------------------------------------------------------
+| Bring in (env)
+|--------------------------------------------------------------------------
+|
+| Load our environment variables into our application context
+|
+*/
+\Leaf\Core::loadApplicationEnv($appPath);
 
-// Bootstrap Laravel and handle the request...
-/** @var Application $app */
-$app = require_once __DIR__.'/../bootstrap/app.php';
-
-$app->handleRequest(Request::capture());
+/*
+|--------------------------------------------------------------------------
+| Run your Leaf MVC application
+|--------------------------------------------------------------------------
+|
+| This line brings in all your routes and starts your application
+|
+*/
+\Leaf\Core::runApplication();

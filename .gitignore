@@ -1,15 +1,34 @@
-# Laravel
-/vendor
+# Packages
+composer.phar
+vendor
+node_modules
 
-# Node dependencies
-/node_modules
-/resources/js/node_modules
+# Environment
+.env
+.env.backup
+.env.production
 
+# Build
+build
+dist
+compiled
 
+# System/Editor
+.fleet
+.idea
+.nova
+.vscode
+.zed
 
-# IDE / Editor
-/.idea
-/.vscode
+# Leaf
+.hana
+.alchemy
+hot
+storage/framework
+storage/logs
+storage/database
+public/storage
 
-# PHPUnit cache
-/.phpunit.result.cache
+# Logs
+npm-debug.log
+yarn-error.log
