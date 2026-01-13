@@ -1,5 +1,5 @@
 <?php
-echo 'asdasdasdasd';
+
 $appPath = dirname(__DIR__);
 
 /*

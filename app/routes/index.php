@@ -54,6 +54,3 @@
 |
 */
 // require __DIR__ . '/custom-route.php';
-app()->inertia('/', 'welcome', [
-    'phpVersion' => PHP_VERSION
-]);
