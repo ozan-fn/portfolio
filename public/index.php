@@ -54,7 +54,7 @@ if (php_sapi_name() === 'cli-server') {
 */
 \Leaf\Core::loadApplicationEnv($appPath);
 app()->config([
-    'debug' => false
+    'debug' => true
 ]);
 /*
 |--------------------------------------------------------------------------
