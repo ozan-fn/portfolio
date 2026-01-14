@@ -2,15 +2,12 @@
     RewriteEngine On
     RewriteBase /
 
-    # 1. Jika URL diawali dengan /api, arahkan ke index.php
-    RewriteRule ^api index.php [L]
-
-    # 2. Jika request adalah file asli yang ada (js, css, png), ambil langsung
+    # 1. Jika file atau folder fisik ada (di dalam /public atau /public/build), 
+    # langsung berikan filenya (JS, CSS, Gambar)
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
 
-    # 3. Jika BUKAN /api dan file tidak ditemukan, arahkan ke index.html (Build Vite)
-    # Ini menangani routing SPA (seperti /dashboard, /profile, dll)
-    RewriteRule ^ index.html [L]
+    # 2. Sisanya (Route API maupun Route SPA), kirim ke index.php
+    RewriteRule ^ index.php [L]
 </IfModule>
