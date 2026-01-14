@@ -1,6 +1,13 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # Kalau URL berawal dengan /api/, arahkan ke index.php
+    RewriteCond %{REQUEST_URI} ^/api/
+    RewriteRule ^ api/index.php [L]
+
+    # Kalau bukan /api/, arahkan ke build/index.html
+    RewriteCond %{REQUEST_URI} !^/api/
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ index.php/$1 [L]
+    RewriteRule ^ build/index.html [L]
 </IfModule>
