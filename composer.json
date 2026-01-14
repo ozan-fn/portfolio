@@ -1,5 +1,5 @@
 {
     "require": {
-        "leafs/leaf": "v4.0"
+        "flightphp/core": "^3.17"
     }
 }

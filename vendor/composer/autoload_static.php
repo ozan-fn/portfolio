@@ -4,44 +4,10 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitdcb621531f5553f22d03360ff78ee054
+class ComposerStaticInitd61a0cb6fcf6ab3ffe7746c206409094
 {
     public static $files = array (
-        'f7a40c1f1f5eb11aee5f7554cb0c8ea7' => __DIR__ . '/..' . '/leafs/form/src/functions.php',
-        '025bf6db9cb3aca2ec53130f65ac52ae' => __DIR__ . '/..' . '/leafs/fs/src/functions.php',
-        'cfb7c780793bfa1138356bbe97dc66da' => __DIR__ . '/..' . '/leafs/http/src/functions.php',
-        'cd18aec96aea037961c7c777fe0159ab' => __DIR__ . '/..' . '/leafs/leaf/src/functions.php',
-    );
-
-    public static $prefixLengthsPsr4 = array (
-        'P' =>
-        array (
-            'Psr\\Log\\' => 8,
-        ),
-        'L' =>
-        array (
-            'Leaf\\Http\\' => 10,
-            'Leaf\\' => 5,
-        ),
-    );
-
-    public static $prefixDirsPsr4 = array (
-        'Psr\\Log\\' =>
-        array (
-            0 => __DIR__ . '/..' . '/psr/log/src',
-        ),
-        'Leaf\\Http\\' =>
-        array (
-            0 => __DIR__ . '/..' . '/leafs/http/src',
-        ),
-        'Leaf\\' =>
-        array (
-            0 => __DIR__ . '/..' . '/leafs/leaf/src',
-            1 => __DIR__ . '/..' . '/leafs/exception/src',
-            2 => __DIR__ . '/..' . '/leafs/fs/src',
-            3 => __DIR__ . '/..' . '/leafs/form/src',
-            4 => __DIR__ . '/..' . '/leafs/anchor/src',
-        ),
+        '4cdafd4a5191caf078235e7dd119fdaf' => __DIR__ . '/..' . '/flightphp/core/flight/autoload.php',
     );
 
     public static $classMap = array (
@@ -51,9 +17,7 @@ class ComposerStaticInitdcb621531f5553f22d03360ff78ee054
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitdcb621531f5553f22d03360ff78ee054::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitdcb621531f5553f22d03360ff78ee054::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitdcb621531f5553f22d03360ff78ee054::$classMap;
+            $loader->classMap = ComposerStaticInitd61a0cb6fcf6ab3ffe7746c206409094::$classMap;
 
         }, null, ClassLoader::class);
     }
