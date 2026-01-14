@@ -1,4 +1,7 @@
+# Redirect semua request ke folder public
 RewriteEngine On
-# Redirect semua traffic ke folder dist
-RewriteCond %{REQUEST_URI} !^/dist/
-RewriteRule ^(.*)$ dist/$1 [L]
+
+# Jika file/folder tidak ada di root, arahkan ke /public
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ public/$1 [L]
