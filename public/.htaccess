@@ -1,13 +1,19 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteBase /
 
-    # Kalau URL berawal dengan /api/, arahkan ke index.php
+    # --- API routes ---
+    # Semua request yang berawal dengan /api/ diarahkan ke index.php + parameter path
     RewriteCond %{REQUEST_URI} ^/api/
-    RewriteRule ^ api/index.php [L]
+    RewriteRule ^api/(.*)$ index.php/$1 [L]
 
-    # Kalau bukan /api/, arahkan ke build/index.html
-    RewriteCond %{REQUEST_URI} !^/api/
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ build/index.html [L]
+    # --- Static files ---
+    # Kalau file atau folder memang ada, jangan rewrite
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # --- Frontend routes ---
+    # Semua selain /api/ dan bukan file/folder → arahkan ke build/index.html
+    RewriteRule ^(.*)$ build/index.html [L]
 </IfModule>
