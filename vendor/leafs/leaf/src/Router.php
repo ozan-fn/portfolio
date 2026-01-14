@@ -701,23 +701,11 @@ class Router
      */
     public static function getCurrentUri(): string
     {
-        $basePath = static::getBasePath();
-        $requestUri = rawurldecode($_SERVER['REQUEST_URI']);
-
-        // Early exit If base path doesn't match
-        if (strncmp($requestUri, $basePath, strlen($basePath)) !== 0) {
-            if (!static::$notFoundHandler) {
-                static::$notFoundHandler = function () {
-                    \Leaf\Exception\General::default404();
-                };
-            }
-            static::invoke(static::$notFoundHandler);
-        }
-
         // Get the current Request URI and remove rewrite base path from it (= allows one to run the router in a sub folder)
-        $uri = substr($requestUri, strlen($basePath)) ?: '/';
-        if (($queryPos = strpos($uri, '?')) !== false) {
-            $uri = substr($uri, 0, $queryPos);
+        $uri = substr(rawurldecode($_SERVER['REQUEST_URI']), strlen(static::getBasePath()));
+
+        if (strstr($uri, '?')) {
+            $uri = substr($uri, 0, strpos($uri, '?'));
         }
 
         return '/' . trim($uri, '/');
@@ -933,17 +921,11 @@ class Router
 
             // First check if is a static method, directly trying to invoke it.
             // If isn't a valid static method, we will try as a normal method invocation.
-            $instance = new $controller();
-
-            if (method_exists($instance, '__middleware')) {
-                $middlewareResponse = $instance->__middleware($method, $params);
-
-                if ($middlewareResponse === false) {
-                    return;
-                }
+            if (call_user_func_array([new $controller(), $method], $params) === false) {
+                // Try to call the method as a non-static method. (the if does nothing, only avoids the notice)
+                if (forward_static_call_array([$controller, $method], $params) === false)
+                ;
             }
-
-            call_user_func_array([$instance, $method], $params);
         } elseif (strpos($handler, ':') !== false) {
             $middlewareParams = [];
 
