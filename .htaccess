@@ -1,12 +1,13 @@
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteBase /
+# Aktifkan Rewrite Engine
+RewriteEngine On
 
-  # Jika file atau folder ada, langsung serve
-  RewriteCond %{REQUEST_FILENAME} -f [OR]
-  RewriteCond %{REQUEST_FILENAME} -d
-  RewriteRule ^ - [L]
+# Tentukan base folder dist
+RewriteBase /dist/
 
-  # Kalau tidak ada file/folder, fallback ke index.html di dist
-  RewriteRule ^ dist/index.html [L]
-</IfModule>
+# Jika file atau folder yang diminta ada, langsung serve
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Jika tidak ada file/folder, arahkan ke index.html di dist
+RewriteRule ^ index.html [L]
