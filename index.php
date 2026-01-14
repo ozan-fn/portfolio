@@ -2,7 +2,7 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
-app()->get('/s', function () {
+app()->get('/', function () {
     response()->page('./welcome.html');
 });
 
