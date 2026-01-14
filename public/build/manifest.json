@@ -1,0 +1,95 @@
+{
+  "_app-layout-CVND3Ew1.js": {
+    "file": "assets/app-layout-CVND3Ew1.js",
+    "name": "app-layout",
+    "imports": [
+      "app/views/js/app.jsx",
+      "_button-C9HkrDy7.js"
+    ]
+  },
+  "_button-C9HkrDy7.js": {
+    "file": "assets/button-C9HkrDy7.js",
+    "name": "button",
+    "imports": [
+      "app/views/js/app.jsx"
+    ]
+  },
+  "_input-error-Hy8LvQ1N.js": {
+    "file": "assets/input-error-Hy8LvQ1N.js",
+    "name": "input-error",
+    "imports": [
+      "app/views/js/app.jsx",
+      "_button-C9HkrDy7.js"
+    ]
+  },
+  "app/views/js/app.jsx": {
+    "file": "assets/app-DvbUOjd7.js",
+    "name": "app",
+    "src": "app/views/js/app.jsx",
+    "isEntry": true,
+    "dynamicImports": [
+      "app/views/js/pages/auth/login.jsx",
+      "app/views/js/pages/auth/register.jsx",
+      "app/views/js/pages/dashboard.jsx",
+      "app/views/js/pages/profile/update.jsx",
+      "app/views/js/pages/welcome.jsx"
+    ],
+    "css": [
+      "assets/app-DMbINJW9.css"
+    ]
+  },
+  "app/views/js/pages/auth/login.jsx": {
+    "file": "assets/login-D11NiJt7.js",
+    "name": "login",
+    "src": "app/views/js/pages/auth/login.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "app/views/js/app.jsx",
+      "_button-C9HkrDy7.js",
+      "_input-error-Hy8LvQ1N.js"
+    ]
+  },
+  "app/views/js/pages/auth/register.jsx": {
+    "file": "assets/register-B779XSnT.js",
+    "name": "register",
+    "src": "app/views/js/pages/auth/register.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "app/views/js/app.jsx",
+      "_button-C9HkrDy7.js",
+      "_input-error-Hy8LvQ1N.js"
+    ]
+  },
+  "app/views/js/pages/dashboard.jsx": {
+    "file": "assets/dashboard-C0Mzo4xf.js",
+    "name": "dashboard",
+    "src": "app/views/js/pages/dashboard.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "app/views/js/app.jsx",
+      "_app-layout-CVND3Ew1.js",
+      "_button-C9HkrDy7.js"
+    ]
+  },
+  "app/views/js/pages/profile/update.jsx": {
+    "file": "assets/update-8RtVNfwl.js",
+    "name": "update",
+    "src": "app/views/js/pages/profile/update.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "app/views/js/app.jsx",
+      "_app-layout-CVND3Ew1.js",
+      "_input-error-Hy8LvQ1N.js",
+      "_button-C9HkrDy7.js"
+    ]
+  },
+  "app/views/js/pages/welcome.jsx": {
+    "file": "assets/welcome-DkxGzlNM.js",
+    "name": "welcome",
+    "src": "app/views/js/pages/welcome.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "app/views/js/app.jsx"
+    ]
+  }
+}
