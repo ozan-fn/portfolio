@@ -10,7 +10,8 @@ export default defineConfig({
             },
         }),
     ],
+    base: "/build/",
     build: {
-        outDir: "../public",
+        outDir: "../public/build",
     },
 });
