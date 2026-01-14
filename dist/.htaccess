@@ -1,0 +1,8 @@
+RewriteEngine On
+# Jika file yang diminta ada (gambar/js/css), ambil filenya
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Jika file tidak ada, arahkan ke index.html
+RewriteRule ^ index.html [L]

@@ -1,13 +1,4 @@
-# Aktifkan Rewrite Engine
 RewriteEngine On
-
-# Tentukan base folder dist
-RewriteBase /dist/
-
-# Jika file atau folder yang diminta ada, langsung serve
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
-
-# Jika tidak ada file/folder, arahkan ke index.html di dist
-RewriteRule ^ index.html [L]
+# Redirect semua traffic ke folder dist
+RewriteCond %{REQUEST_URI} !^/dist/
+RewriteRule ^(.*)$ dist/$1 [L]
