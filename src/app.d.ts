@@ -6,10 +6,16 @@ declare global {
 	namespace App {
 		interface Locals { user?: User; session?: Session }
 
+		interface Platform {
+			env: Env;
+			ctx: ExecutionContext;
+			caches: CacheStorage;
+			cf?: IncomingRequestCfProperties
+		}
+
 		// interface Error {}
 		// interface PageData {}
 		// interface PageState {}
-		// interface Platform {}
 	}
 }
 
