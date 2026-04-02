@@ -37,6 +37,10 @@
     let roundScore = $state(0);
     let showTarget = $state(true);
 
+    // Timer State
+    let countdown = $state(5);
+    let timerInterval: ReturnType<typeof setInterval>;
+
     // Multiplayer State
     let client: mqtt.MqttClient | null = $state(null);
     let players = $state<{ name: string; score: number; currentRound: number; isFinished: boolean }[]>([]);
@@ -53,8 +57,13 @@
         const sDiff = Math.abs(targetColor.s - guessS);
         const lDiff = Math.abs(targetColor.l - guessL);
 
-        const totalError = (hDiff + sDiff + lDiff) / 3;
-        return Math.max(0, Math.round(100 - totalError));
+        const totalError = (hDiff + sDiff + lDiff) / 3; // Skala error 0 - 100
+
+        // Konversi ke skala 0.00 - 10.00
+        let rawScore = 10 - totalError / 10;
+        rawScore = Math.max(0, rawScore);
+
+        return Math.round(rawScore * 100) / 100; // Contoh: 8.45
     };
 
     // --- MQTT LOGIC ---
@@ -140,16 +149,25 @@
         guessH = 180;
         guessS = 50;
         guessL = 50;
+        countdown = 5;
 
         // Ambil warna berdasarkan ronde saat ini
         targetColor = targetColorsList[round - 1];
 
-        setTimeout(() => {
-            showTarget = false;
-        }, 5100);
+        // Jalankan hitungan mundur
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            countdown -= 1;
+            if (countdown <= 0) {
+                clearInterval(timerInterval);
+                showTarget = false;
+            }
+        }, 1000);
     };
 
     const submitGuess = () => {
+        if (timerInterval) clearInterval(timerInterval);
+
         roundScore = calculateScore();
         score += roundScore;
 
@@ -218,6 +236,7 @@
 
     onDestroy(() => {
         if (client) client.end();
+        if (timerInterval) clearInterval(timerInterval);
     });
 </script>
 
@@ -327,7 +346,7 @@
                     <div class="flex flex-col gap-6">
                         <div class="flex justify-between items-center">
                             <Badge variant="secondary" class="scale-110">Ronde {round} / {maxRounds}</Badge>
-                            <span class="font-bold text-lg">Skor: <span class="text-primary">{score}</span></span>
+                            <span class="font-bold text-lg">Skor: <span class="text-primary">{score.toFixed(2)}</span></span>
                         </div>
 
                         {#if client}
@@ -340,7 +359,7 @@
                                             {#if p.isFinished}
                                                 <Badge variant="secondary" class="text-[10px]">Selesai Game</Badge>
                                             {:else}
-                                                <span class="text-xs text-muted-foreground">Ronde {p.currentRound} | {p.score} Pts</span>
+                                                <span class="text-xs text-muted-foreground">Ronde {p.currentRound} | {p.score.toFixed(2)} Pts</span>
                                             {/if}
                                         </div>
                                     {/each}
@@ -350,7 +369,13 @@
 
                         <div class="flex flex-col items-center gap-2">
                             <p class="text-sm font-semibold text-muted-foreground">Ingat & Tebak Warna Ini!</p>
-                            <div class="w-full h-32 rounded-xl shadow-inner transition-opacity duration-500 flex items-center justify-center relative" style="background-color: hsl({targetColor.h}, {targetColor.s}%, {targetColor.l}%); opacity: {showTarget ? '1' : '0'};">
+                            <div class="w-full h-48 rounded-xl shadow-inner transition-opacity duration-500 flex items-center justify-center relative" style="background-color: hsl({targetColor.h}, {targetColor.s}%, {targetColor.l}%); opacity: {showTarget ? '1' : '0'};">
+                                {#if showTarget}
+                                    <div class="absolute top-3 right-3 font-mono text-lg font-bold text-white bg-black/30 px-3 py-1 rounded-lg backdrop-blur-md shadow-sm border border-white/10">
+                                        {countdown}s
+                                    </div>
+                                {/if}
+
                                 {#if !showTarget}
                                     <span class="absolute inset-0 flex items-center justify-center text-muted-foreground font-mono">Warna Disembunyikan</span>
                                 {/if}
@@ -365,9 +390,9 @@
                                     <Label>Hue (Warna)</Label>
                                     <span class="text-xs text-muted-foreground">{guessH}°</span>
                                 </div>
-                                <div class="relative flex items-center w-full h-5">
-                                    <div class="absolute w-full h-2 rounded-full pointer-events-none shadow-inner" style="background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);"></div>
-                                    <Slider class="color-slider-track w-full" type="single" bind:value={guessH} max={360} step={1} />
+                                <div class="relative flex items-center w-full h-12">
+                                    <div class="absolute inset-0 w-full h-full rounded-md pointer-events-none shadow-inner" style="background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);"></div>
+                                    <Slider class="color-slider-track absolute inset-0 w-full h-full" type="single" bind:value={guessH} max={360} step={1} />
                                 </div>
                             </div>
 
@@ -376,9 +401,9 @@
                                     <Label>Saturation (Intensitas)</Label>
                                     <span class="text-xs text-muted-foreground">{guessS}%</span>
                                 </div>
-                                <div class="relative flex items-center w-full h-5">
-                                    <div class="absolute w-full h-2 rounded-full pointer-events-none shadow-inner" style="background: linear-gradient(to right, hsl({guessH}, 0%, {guessL}%), hsl({guessH}, 100%, {guessL}%));"></div>
-                                    <Slider class="color-slider-track w-full" type="single" bind:value={guessS} max={100} step={1} />
+                                <div class="relative flex items-center w-full h-12">
+                                    <div class="absolute inset-0 w-full h-full rounded-md pointer-events-none shadow-inner" style="background: linear-gradient(to right, hsl({guessH}, 0%, {guessL}%), hsl({guessH}, 100%, {guessL}%));"></div>
+                                    <Slider class="color-slider-track absolute inset-0 w-full h-full" type="single" bind:value={guessS} max={100} step={1} />
                                 </div>
                             </div>
 
@@ -387,14 +412,14 @@
                                     <Label>Lightness (Kecerahan)</Label>
                                     <span class="text-xs text-muted-foreground">{guessL}%</span>
                                 </div>
-                                <div class="relative flex items-center w-full h-5">
-                                    <div class="absolute w-full h-2 rounded-full pointer-events-none shadow-inner" style="background: linear-gradient(to right, #000000, hsl({guessH}, {guessS}%, 50%), #ffffff);"></div>
-                                    <Slider class="color-slider-track w-full" type="single" bind:value={guessL} max={100} step={1} />
+                                <div class="relative flex items-center w-full h-12">
+                                    <div class="absolute inset-0 w-full h-full rounded-md pointer-events-none shadow-inner" style="background: linear-gradient(to right, #000000, hsl({guessH}, {guessS}%, 50%), #ffffff);"></div>
+                                    <Slider class="color-slider-track absolute inset-0 w-full h-full" type="single" bind:value={guessL} max={100} step={1} />
                                 </div>
                             </div>
                         </div>
 
-                        <div class="w-full h-16 rounded-lg shadow-md border" style="background-color: hsl({guessH}, {guessS}%, {guessL}%);"></div>
+                        <div class="w-full h-24 rounded-lg shadow-md border transition-colors" style="background-color: hsl({guessH}, {guessS}%, {guessL}%);"></div>
 
                         <Button size="lg" class="w-full mt-2" onclick={submitGuess}>Kunci Jawaban</Button>
                     </div>
@@ -412,7 +437,7 @@
                             </div>
 
                             <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 200, damping: 10 }}>
-                                <p class="text-5xl font-black text-primary mb-2">+{roundScore}</p>
+                                <p class="text-5xl font-black text-primary mb-2">+{roundScore.toFixed(2)}</p>
                                 <p class="text-sm text-muted-foreground">Akurasi Tebakan</p>
                             </motion.div>
 
@@ -427,7 +452,7 @@
                                                     (Ronde {player.currentRound})
                                                 </span>
                                             </span>
-                                            <span class="font-bold">{player.score} Pts</span>
+                                            <span class="font-bold">{player.score.toFixed(2)} Pts</span>
                                         </div>
                                     {/each}
                                 </div>
@@ -443,7 +468,7 @@
                         <CardHeader>
                             <CardTitle class="text-3xl font-black">Game Selesai!</CardTitle>
                             {#if !client}
-                                <CardDescription>Skor Akhir Kamu: <span class="font-bold text-foreground">{score} Pts</span></CardDescription>
+                                <CardDescription>Skor Akhir Kamu: <span class="font-bold text-foreground">{score.toFixed(2)} Pts</span></CardDescription>
                             {/if}
                         </CardHeader>
                         <CardContent class="flex flex-col gap-6">
@@ -459,7 +484,7 @@
                                                     <span class="text-xs text-muted-foreground">(Masih Main)</span>
                                                 {/if}
                                             </span>
-                                            <span class="font-bold text-primary">{player.score} Pts</span>
+                                            <span class="font-bold text-primary">{player.score.toFixed(2)} Pts</span>
                                         </div>
                                     {/each}
                                 </div>
@@ -488,11 +513,38 @@
 </div>
 
 <style>
-    /* CSS GLOBAL: Menghapus background track (garis) bawaan Shadcn Slider */
+    /* CSS GLOBAL: Override Slider Bawaan Shadcn */
+
+    /* Root Slider menyesuaikan seluruh container agar area kliknya penuh h-12 */
+    :global(.color-slider-track) {
+        height: 100% !important;
+        align-items: stretch !important;
+        cursor: pointer;
+    }
+
+    /* Hapus garis bawaan */
     :global(.color-slider-track > span:first-child) {
+        height: 100% !important;
         background-color: transparent !important;
     }
     :global(.color-slider-track > span:first-child > span) {
         background-color: transparent !important;
+    }
+
+    /* Ubah "Thumb" (Tombol Geser) menjadi bentuk persegi panjang 10px */
+    :global(.color-slider-track [role='slider']) {
+        width: 10px !important;
+        height: 100% !important;
+        border-radius: 4px !important;
+        background-color: white !important;
+        border: 2px solid rgba(0, 0, 0, 0.4) !important;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.5) !important;
+        top: 0 !important;
+        cursor: grab;
+    }
+
+    /* Efek ketika thumb ditahan/digeser */
+    :global(.color-slider-track [role='slider']:active) {
+        cursor: grabbing;
     }
 </style>
