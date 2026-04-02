@@ -21,7 +21,7 @@
         { id: 'game', label: 'Mini Game', icon: Gamepad2, path: '/game' },
     ];
 
-    const techStack = ['Golang', 'Rust', 'Next.js', 'Svelte', 'Wails', 'Roblox'];
+    const techStack = ['Golang', 'Rust', 'Next.js', 'Svelte', 'Wails', 'Docker'];
 
     let activeTab = $derived(page.url.pathname === '/' ? 'home' : page.url.pathname.split('/')[1]);
 
@@ -51,12 +51,12 @@
 </div>
 
 {#if isMobileOpen}
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden" transition:fade={{ duration: 200 }} onclick={() => (isMobileOpen = false)}></div>
+    <button type="button" aria-label="Close sidebar overlay" class="fixed inset-0 w-full h-full border-none outline-none cursor-default bg-background/80 backdrop-blur-sm z-40 md:hidden block p-0 m-0" transition:fade={{ duration: 200 }} onclick={() => (isMobileOpen = false)}></button>
 {/if}
 
 <aside
     class="
-    fixed inset-y-0 left-0 z-50 w-[280px] bg-background md:bg-transparent transform transition-transform duration-300 ease-in-out md:relative md:transform-none md:w-full md:max-w-70 shrink-0
+    fixed inset-y-0 left-0 z-50 w-70 bg-background md:bg-transparent transform transition-transform duration-300 ease-in-out md:relative md:transform-none md:w-full md:max-w-70 shrink-0
     {isMobileOpen ? 'translate-x-0 shadow-2xl border-r border-border' : '-translate-x-full md:translate-x-0 md:shadow-none md:border-none'}
 "
 >
