@@ -5,6 +5,9 @@
     import { Separator } from '$lib/components/ui/separator';
     import { Card, CardContent } from '$lib/components/ui/card';
 
+    // Mode Toggle
+    import ModeToggle from '$lib/components/mode-toggle.svelte';
+
     // Tambahan icon Menu (garis 3) dan X (close)
     import { Circle, FolderCode, Gamepad2, Home, Mail, PenTool, Menu, X } from '@lucide/svelte';
 
@@ -21,7 +24,7 @@
         { id: 'game', label: 'Mini Game', icon: Gamepad2, path: '/game' },
     ];
 
-    const techStack = ['Golang', 'Rust', 'Next.js', 'Svelte', 'Wails', 'Docker'];
+    const techStack = ['Golang', 'Rust', 'Next.js', 'Svelte', 'Wails', 'Roblox'];
 
     let activeTab = $derived(page.url.pathname === '/' ? 'home' : page.url.pathname.split('/')[1]);
 
@@ -45,9 +48,13 @@
             <p class="text-[10px] text-muted-foreground font-mono uppercase">Developer</p>
         </div>
     </div>
-    <button onclick={() => (isMobileOpen = true)} class="p-2 hover:bg-muted rounded-md transition-colors">
-        <Menu class="size-6" />
-    </button>
+
+    <div class="flex items-center gap-2">
+        <ModeToggle />
+        <button onclick={() => (isMobileOpen = true)} class="p-2 hover:bg-muted rounded-md transition-colors">
+            <Menu class="size-6" />
+        </button>
+    </div>
 </div>
 
 {#if isMobileOpen}
@@ -65,6 +72,11 @@
             <button class="absolute top-4 right-4 md:hidden p-2 hover:bg-muted rounded-md transition-colors" onclick={() => (isMobileOpen = false)}>
                 <X class="size-5" />
             </button>
+
+            <!-- Mode Toggle untuk Desktop -->
+            <div class="absolute top-4 right-4 hidden md:block">
+                <ModeToggle />
+            </div>
 
             <div class="flex flex-col items-center text-center mb-8">
                 <div class="relative mb-5">
