@@ -1,6 +1,6 @@
 <script lang="ts">
     import { authClient } from '$lib/auth-client';
-    import { page } from '$app/stores';
+    import { page } from '$app/state';
     import * as Card from '$lib/components/ui/card';
     import { Button } from '$lib/components/ui/button';
     import { Input } from '$lib/components/ui/input';
@@ -19,7 +19,7 @@
         const { data, error } = await authClient.signIn.email({
             email,
             password,
-            callbackURL: $page.url.searchParams.get('callbackUrl') || '/dashboard',
+            callbackURL: page.url.searchParams.get('callbackUrl') || '/dashboard',
         });
 
         if (error) {
@@ -65,10 +65,6 @@
             </form>
         </Card.Content>
         <Card.Footer class="flex flex-col items-center gap-2 text-sm text-muted-foreground">
-            <div class="flex gap-1">
-                Don't have an account?
-                <a href="/register" class="font-medium text-primary hover:underline">Register</a>
-            </div>
             <p class="text-[10px] opacity-50">#AntiBobolClub #BelajarLagiDek</p>
         </Card.Footer>
     </Card.Root>
