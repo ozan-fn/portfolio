@@ -74,3 +74,25 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+enum ProjectStatus {
+  COMPLETED
+  IN_PROGRESS
+  ARCHIVED
+}
+
+model Project {
+  id          String        @id @default(uuid())
+  title       String        @db.VarChar(100)
+  thumbnail   String?       @db.Text
+  description String        @db.Text
+  content     String?       @db.Text
+  techStack   String[]
+  githubUrl   String?       @db.Text
+  demoUrl     String?       @db.Text
+  status      ProjectStatus @default(COMPLETED)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("projects")
+}
