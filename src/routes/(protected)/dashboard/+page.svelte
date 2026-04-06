@@ -1,119 +1,101 @@
-<script lang="ts">
-    import * as Card from '$lib/components/ui/card';
-    import { Badge } from '$lib/components/ui/badge';
-    import { LayoutDashboard, Briefcase, FileText, Users, TrendingUp } from '@lucide/svelte';
-
-    const stats = [
-        {
-            title: 'Total Projects',
-            value: '12',
-            description: '+2 dari bulan lalu',
-            icon: Briefcase,
-            color: 'text-blue-500',
-        },
-        {
-            title: 'Blog Posts',
-            value: '24',
-            description: '5 draf perlu direview',
-            icon: FileText,
-            color: 'text-purple-500',
-        },
-        {
-            title: 'Visitors',
-            value: '1,234',
-            description: '+15% traffic naik dek',
-            icon: Users,
-            color: 'text-green-500',
-        },
-        {
-            title: 'Engagement',
-            value: '89%',
-            description: 'Gak kena mental',
-            icon: TrendingUp,
-            color: 'text-orange-500',
-        },
-    ];
-
-    const recentActivities = [
-        { id: 1, action: 'Updated Project', target: 'E-Commerce Microservices', time: '2 jam yang lalu', status: 'Success' },
-        { id: 2, action: 'New Blog Post', target: 'Belajar Rust Sampai Tipes', time: '5 jam yang lalu', status: 'Draft' },
-        { id: 3, action: 'System Backup', target: 'Database Production', time: '1 hari yang lalu', status: 'Success' },
-        { id: 4, action: 'Failed Login', target: 'IP: 192.168.1.1 (Bobol kah?)', time: '2 hari yang lalu', status: 'Warning' },
-    ];
+<script module>
+    import { Plus } from '@lucide/svelte';
 </script>
 
-<div class="flex flex-col gap-8">
-    <div>
-        <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p class="text-muted-foreground">Selamat datang kembali, si paling tech stack. Monitor semuanya di sini.</p>
+<script lang="ts">
+    import { LayoutDashboard, Briefcase, FileText, Tag, ArrowUpRight } from '@lucide/svelte';
+    import { Button } from '$lib/components/ui/button/index.js';
+</script>
+
+<div class="p-6 max-w-7xl mx-auto w-full space-y-8">
+    <div class="flex flex-col gap-1">
+        <h1 class="text-3xl font-bold tracking-tight">Dashboard Overview</h1>
+        <p class="text-muted-foreground italic text-sm">Welcome back to your control center.</p>
     </div>
 
-    <!-- Stats Grid -->
-    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {#each stats as stat}
-            <Card.Root>
-                <Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <Card.Title class="text-sm font-medium">{stat.title}</Card.Title>
-                    <stat.icon size={16} class="text-muted-foreground {stat.color}" />
-                </Card.Header>
-                <Card.Content>
-                    <div class="text-2xl font-bold">{stat.value}</div>
-                    <p class="text-xs text-muted-foreground italic">{stat.description}</p>
-                </Card.Content>
-            </Card.Root>
-        {/each}
+    <!-- Quick Stats Grid -->
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div class="rounded-xl border bg-card p-6 shadow-sm">
+            <div class="flex items-center justify-between space-y-0 pb-2">
+                <h3 class="text-sm font-medium">Total Projects</h3>
+                <Briefcase class="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div class="flex items-end justify-between">
+                <div class="text-2xl font-bold">12</div>
+                <Button variant="ghost" size="sm" href="/dashboard/projects" class="h-8 px-2 text-xs">
+                    View All <ArrowUpRight class="ml-1 h-3 w-3" />
+                </Button>
+            </div>
+        </div>
+
+        <div class="rounded-xl border bg-card p-6 shadow-sm">
+            <div class="flex items-center justify-between space-y-0 pb-2">
+                <h3 class="text-sm font-medium">Blog Posts</h3>
+                <FileText class="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div class="flex items-end justify-between">
+                <div class="text-2xl font-bold">24</div>
+                <Button variant="ghost" size="sm" href="/dashboard/blog" class="h-8 px-2 text-xs">
+                    View All <ArrowUpRight class="ml-1 h-3 w-3" />
+                </Button>
+            </div>
+        </div>
+
+        <div class="rounded-xl border bg-card p-6 shadow-sm">
+            <div class="flex items-center justify-between space-y-0 pb-2">
+                <h3 class="text-sm font-medium">Categories</h3>
+                <Tag class="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div class="flex items-end justify-between">
+                <div class="text-2xl font-bold">8</div>
+                <Button variant="ghost" size="sm" href="/dashboard/categories" class="h-8 px-2 text-xs">
+                    View All <ArrowUpRight class="ml-1 h-3 w-3" />
+                </Button>
+            </div>
+        </div>
+
+        <div class="rounded-xl border bg-card p-6 shadow-sm">
+            <div class="flex items-center justify-between space-y-0 pb-2">
+                <h3 class="text-sm font-medium">Admin Status</h3>
+                <div class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
+            </div>
+            <div class="text-2xl font-bold">Active</div>
+            <p class="text-[10px] text-muted-foreground mt-1">Last login: Today</p>
+        </div>
     </div>
 
-    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <!-- Recent Activity -->
-        <Card.Root class="col-span-full lg:col-span-4">
-            <Card.Header>
-                <Card.Title>Recent Activity</Card.Title>
-                <Card.Description>Log aktivitas terakhir di sistem portfolio kamu.</Card.Description>
-            </Card.Header>
-            <Card.Content>
-                <div class="space-y-6">
-                    {#each recentActivities as activity}
-                        <div class="flex items-center gap-4">
-                            <div class="size-2 rounded-full {activity.status === 'Success' ? 'bg-green-500' : activity.status === 'Warning' ? 'bg-red-500' : 'bg-blue-500'}"></div>
-                            <div class="flex-1 space-y-1">
-                                <p class="text-sm font-medium leading-none">{activity.action}: <span class="text-muted-foreground">{activity.target}</span></p>
-                                <p class="text-xs text-muted-foreground">{activity.time}</p>
-                            </div>
-                            <Badge variant="outline" class="text-[10px]">{activity.status}</Badge>
-                        </div>
-                    {/each}
-                </div>
-            </Card.Content>
-        </Card.Root>
+    <!-- Recent Activity Placeholder -->
+    <div class="grid gap-6 md:grid-cols-2">
+        <div class="rounded-xl border bg-card p-6 shadow-sm min-h-[300px] flex flex-col gap-4">
+            <h3 class="font-semibold">Quick Actions</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <Button variant="outline" class="h-24 flex-col gap-2" href="/dashboard/projects/new">
+                    <Plus size={20} />
+                    <span>New Project</span>
+                </Button>
+                <Button variant="outline" class="h-24 flex-col gap-2" href="/dashboard/blog/new">
+                    <Plus size={20} />
+                    <span>New Article</span>
+                </Button>
+            </div>
+        </div>
 
-        <!-- System Status -->
-        <Card.Root class="col-span-full lg:col-span-3">
-            <Card.Header>
-                <Card.Title>System Status</Card.Title>
-                <Card.Description>Kesehatan server saat ini.</Card.Description>
-            </Card.Header>
-            <Card.Content class="space-y-4">
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between text-sm">
-                        <span>Server Load</span>
-                        <span class="font-bold text-green-500">Aman Dek (12%)</span>
-                    </div>
-                    <div class="h-2 w-full rounded-full bg-secondary overflow-hidden">
-                        <div class="h-full bg-green-500 w-[12%]"></div>
-                    </div>
+        <div class="rounded-xl border bg-card p-6 shadow-sm min-h-[300px]">
+            <h3 class="font-semibold mb-4">System Status</h3>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between text-sm border-b pb-2">
+                    <span class="text-muted-foreground">Framework</span>
+                    <span class="font-medium">SvelteKit 2 / Svelte 5</span>
                 </div>
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between text-sm">
-                        <span>Memory Usage</span>
-                        <span class="font-bold text-blue-500">45%</span>
-                    </div>
-                    <div class="h-2 w-full rounded-full bg-secondary overflow-hidden">
-                        <div class="h-full bg-blue-500 w-[45%]"></div>
-                    </div>
+                <div class="flex items-center justify-between text-sm border-b pb-2">
+                    <span class="text-muted-foreground">Database</span>
+                    <span class="font-medium text-emerald-600">Connected (Neon/Prisma)</span>
                 </div>
-                <div class="rounded-lg bg-muted p-4 text-xs italic text-muted-foreground border border-dashed border-primary/20">"Firewall aktif. Percobaan bobol akan otomatis dialihkan ke video tutorial 'Cara Belajar HTML Dasar'."</div>
-            </Card.Content>
-        </Card.Root>
+                <div class="flex items-center justify-between text-sm border-b pb-2">
+                    <span class="text-muted-foreground">Auth</span>
+                    <span class="font-medium">Better-Auth</span>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

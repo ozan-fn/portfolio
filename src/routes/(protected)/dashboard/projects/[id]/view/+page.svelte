@@ -1,21 +1,10 @@
-```svelte D:/projects/portfolio-sv/src/routes/(protected)/dashboard/projects/[id]/view/+page.svelte
 <script lang="ts">
     import type { PageData } from './$types';
     import { Button } from '$lib/components/ui/button/index.js';
     import { Badge } from '$lib/components/ui/badge/index.js';
-    import {
-        ChevronLeft,
-        Pencil,
-        ExternalLink,
-        Code,
-        Calendar,
-        Layers,
-        Info,
-        ArrowUpRight
-    } from '@lucide/svelte';
+    import { ChevronLeft, Pencil, ExternalLink, Code, Calendar, Layers, Info, ArrowUpRight } from '@lucide/svelte';
 
     let { data }: { data: PageData } = $props();
-    const { project } = data;
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -40,9 +29,9 @@
             </Button>
             <div>
                 <div class="flex items-center gap-2">
-                    <h1 class="text-3xl font-bold tracking-tight">{project.title}</h1>
-                    <Badge variant={getStatusColor(project.status)} class="ml-2">
-                        {project.status.replace('_', ' ')}
+                    <h1 class="text-3xl font-bold tracking-tight">{data.project.title}</h1>
+                    <Badge variant={getStatusColor(data.project.status)} class="ml-2">
+                        {data.project.status.replace('_', ' ')}
                     </Badge>
                 </div>
                 <p class="text-muted-foreground">Detailed project information and statistics.</p>
@@ -50,11 +39,11 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <Button variant="outline" href="/projects/{project.id}" target="_blank">
+            <Button variant="outline" href="/projects/{data.project.id}" target="_blank">
                 <ExternalLink class="mr-2 h-4 w-4" />
                 Public View
             </Button>
-            <Button href="/dashboard/projects/{project.id}">
+            <Button href="/dashboard/projects/{data.project.id}">
                 <Pencil class="mr-2 h-4 w-4" />
                 Edit Project
             </Button>
@@ -73,37 +62,29 @@
                     </h3>
                 </div>
                 <div class="p-0">
-                    {#if project.thumbnail}
-                        <img
-                            src={project.thumbnail}
-                            alt={project.title}
-                            class="aspect-video w-full object-cover"
-                        />
+                    {#if data.project.thumbnail}
+                        <img src={data.project.thumbnail} alt={data.project.title} class="aspect-video w-full object-cover" />
                     {:else}
-                        <div class="flex aspect-video items-center justify-center bg-muted text-muted-foreground italic">
-                            No thumbnail provided
-                        </div>
+                        <div class="flex aspect-video items-center justify-center bg-muted text-muted-foreground italic">No thumbnail provided</div>
                     {/if}
                 </div>
             </div>
 
             <!-- Description & Content Section -->
             <div class="rounded-xl border bg-card shadow-sm">
-                <div class="border-b bg-muted/50 p-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                    Content & Details
-                </div>
+                <div class="border-b bg-muted/50 p-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Content & Details</div>
                 <div class="p-6 space-y-6">
                     <div>
                         <h4 class="text-sm font-medium text-muted-foreground mb-2">Short Description</h4>
-                        <p class="text-lg leading-relaxed">{project.description}</p>
+                        <p class="text-lg leading-relaxed">{data.project.description}</p>
                     </div>
 
                     <div class="pt-4 border-t">
                         <h4 class="text-sm font-medium text-muted-foreground mb-4">Detailed Content</h4>
                         <div class="prose prose-sm dark:prose-invert max-w-none">
-                            {#if project.content}
+                            {#if data.project.content}
                                 <div class="whitespace-pre-wrap rounded-lg bg-muted/30 p-4 border italic text-muted-foreground">
-                                    {project.content}
+                                    {data.project.content}
                                 </div>
                             {:else}
                                 <p class="italic text-muted-foreground">No detailed content written yet.</p>
@@ -126,14 +107,14 @@
                             <Calendar class="mr-2 h-4 w-4" />
                             Created
                         </span>
-                        <span class="font-medium">{new Date(project.createdAt).toLocaleDateString()}</span>
+                        <span class="font-medium">{new Date(data.project.createdAt).toLocaleDateString()}</span>
                     </div>
                     <div class="flex items-center justify-between text-sm">
                         <span class="flex items-center text-muted-foreground">
                             <Layers class="mr-2 h-4 w-4" />
                             Status
                         </span>
-                        <span class="font-medium">{project.status}</span>
+                        <span class="font-medium">{data.project.status}</span>
                     </div>
                 </div>
             </div>
@@ -142,13 +123,8 @@
             <div class="rounded-xl border bg-card shadow-sm p-6 space-y-4">
                 <h3 class="font-semibold text-sm uppercase tracking-wider text-muted-foreground">External Links</h3>
                 <div class="grid gap-2">
-                    {#if project.githubUrl}
-                        <a
-                            href={project.githubUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            class="flex items-center justify-between p-3 rounded-lg border bg-muted/20 hover:bg-muted/50 transition-colors text-sm"
-                        >
+                    {#if data.project.githubUrl}
+                        <a href={data.project.githubUrl} target="_blank" rel="noreferrer" class="flex items-center justify-between p-3 rounded-lg border bg-muted/20 hover:bg-muted/50 transition-colors text-sm">
                             <span class="flex items-center font-medium">
                                 <Code class="mr-2 h-4 w-4 text-primary" />
                                 Source Code
@@ -157,13 +133,8 @@
                         </a>
                     {/if}
 
-                    {#if project.demoUrl}
-                        <a
-                            href={project.demoUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            class="flex items-center justify-between p-3 rounded-lg border bg-muted/20 hover:bg-muted/50 transition-colors text-sm"
-                        >
+                    {#if data.project.demoUrl}
+                        <a href={data.project.demoUrl} target="_blank" rel="noreferrer" class="flex items-center justify-between p-3 rounded-lg border bg-muted/20 hover:bg-muted/50 transition-colors text-sm">
                             <span class="flex items-center font-medium">
                                 <ExternalLink class="mr-2 h-4 w-4 text-primary" />
                                 Live Demo
@@ -172,7 +143,7 @@
                         </a>
                     {/if}
 
-                    {#if !project.githubUrl && !project.demoUrl}
+                    {#if !data.project.githubUrl && !data.project.demoUrl}
                         <p class="text-sm text-muted-foreground italic">No links available</p>
                     {/if}
                 </div>
@@ -182,10 +153,10 @@
             <div class="rounded-xl border bg-card shadow-sm p-6 space-y-4">
                 <h3 class="font-semibold text-sm uppercase tracking-wider text-muted-foreground text-xs">Technologies</h3>
                 <div class="flex flex-wrap gap-2">
-                    {#each project.techStack as tech}
+                    {#each data.project.techStack as tech}
                         <Badge variant="secondary" class="font-normal">{tech}</Badge>
                     {/each}
-                    {#if project.techStack.length === 0}
+                    {#if data.project.techStack.length === 0}
                         <span class="text-sm text-muted-foreground italic">None specified</span>
                     {/if}
                 </div>

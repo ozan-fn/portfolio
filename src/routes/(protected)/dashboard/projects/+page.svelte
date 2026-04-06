@@ -4,9 +4,9 @@
     import { Button } from '$lib/components/ui/button/index.js';
     import { Badge } from '$lib/components/ui/badge/index.js';
     import { Plus, Pencil, Trash2, ExternalLink, Code, Eye } from '@lucide/svelte';
+    import { enhance } from '$app/forms';
 
     let { data }: { data: PageData } = $props();
-    const { projects } = data;
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -22,11 +22,11 @@
     };
 </script>
 
-<div class="flex flex-col gap-6">
+<div class="p-6 max-w-7xl mx-auto w-full flex flex-col gap-6">
     <div class="flex items-center justify-between">
-        <div>
+        <div class="flex flex-col gap-1">
             <h1 class="text-3xl font-bold tracking-tight">Projects</h1>
-            <p class="text-muted-foreground">Manage your portfolio projects here.</p>
+            <p class="text-muted-foreground text-sm italic">Manage your portfolio projects and showcase your best work.</p>
         </div>
         <Button href="/dashboard/projects/new">
             <Plus class="mr-2 h-4 w-4" />
@@ -34,7 +34,7 @@
         </Button>
     </div>
 
-    <div class="rounded-md border bg-card">
+    <div class="rounded-md border bg-card shadow-sm">
         <Table.Root>
             <Table.Header>
                 <Table.Row>
@@ -46,12 +46,12 @@
                 </Table.Row>
             </Table.Header>
             <Table.Body>
-                {#if projects.length === 0}
+                {#if data.projects.length === 0}
                     <Table.Row>
                         <Table.Cell colspan={5} class="h-24 text-center text-muted-foreground">No projects found. Create your first project to get started.</Table.Cell>
                     </Table.Row>
                 {:else}
-                    {#each projects as project (project.id)}
+                    {#each data.projects as project (project.id)}
                         <Table.Row>
                             <Table.Cell>
                                 <div class="flex flex-col">
@@ -78,7 +78,7 @@
                             <Table.Cell>
                                 <div class="flex flex-wrap gap-1">
                                     {#each project.techStack.slice(0, 3) as tech}
-                                        <Badge variant="outline" class="text-[10px] px-1 py-0">{tech}</Badge>
+                                        <Badge variant="outline" class="text-[10px] px-1 py-0 font-normal">{tech}</Badge>
                                     {/each}
                                     {#if project.techStack.length > 3}
                                         <span class="text-[10px] text-muted-foreground">+{project.techStack.length - 3}</span>
@@ -92,17 +92,28 @@
                             </Table.Cell>
                             <Table.Cell class="text-right">
                                 <div class="flex justify-end gap-2">
-                                    <Button variant="ghost" size="icon" href="/dashboard/projects/{project.id}/view">
+                                    <Button variant="ghost" size="icon" href="/dashboard/projects/{project.id}/view" class="h-8 w-8">
                                         <Eye class="h-4 w-4" />
                                         <span class="sr-only">View</span>
                                     </Button>
-                                    <Button variant="ghost" size="icon" href="/dashboard/projects/{project.id}">
+                                    <Button variant="ghost" size="icon" href="/dashboard/projects/{project.id}" class="h-8 w-8">
                                         <Pencil class="h-4 w-4" />
                                         <span class="sr-only">Edit</span>
                                     </Button>
-                                    <form action="?/delete" method="POST">
+                                    <form
+                                        action="?/delete"
+                                        method="POST"
+                                        use:enhance={({ cancel }) => {
+                                            if (!confirm('Are you sure you want to delete this project?')) {
+                                                cancel();
+                                            }
+                                            return async ({ update }) => {
+                                                await update();
+                                            };
+                                        }}
+                                    >
                                         <input type="hidden" name="id" value={project.id} />
-                                        <Button variant="ghost" size="icon" type="submit" class="text-destructive hover:text-destructive hover:bg-destructive/10">
+                                        <Button variant="ghost" size="icon" type="submit" class="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10">
                                             <Trash2 class="h-4 w-4" />
                                             <span class="sr-only">Delete</span>
                                         </Button>

@@ -1,6 +1,6 @@
 <script lang="ts">
     import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-    import { LayoutDashboard, Briefcase, FileText, Settings, LogOut, User } from '@lucide/svelte';
+    import { LayoutDashboard, Briefcase, FileText, Settings, LogOut, User, Tag } from '@lucide/svelte';
     import ModeToggle from '$lib/components/mode-toggle.svelte';
     import { authClient } from '$lib/auth-client';
     import { goto } from '$app/navigation';
@@ -21,6 +21,11 @@
             title: 'Blog',
             url: '/dashboard/blog',
             icon: FileText,
+        },
+        {
+            title: 'Categories',
+            url: '/dashboard/categories',
+            icon: Tag,
         },
         {
             title: 'Settings',
@@ -57,7 +62,7 @@
                 <Sidebar.Menu>
                     {#each items as item (item.title)}
                         <Sidebar.MenuItem>
-                            <Sidebar.MenuButton isActive={page.url.pathname === item.url}>
+                            <Sidebar.MenuButton isActive={page.url.pathname === item.url || (item.url !== '/dashboard' && page.url.pathname.startsWith(item.url))}>
                                 {#snippet child({ props })}
                                     <a href={item.url} {...props}>
                                         <item.icon size={18} />
