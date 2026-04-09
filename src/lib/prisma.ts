@@ -1,9 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaNeon } from '@prisma/adapter-neon';
+import 'dotenv/config';
 
-const DATABASE_URL = await import('$env/static/private')
-    .then((m) => m.DATABASE_URL) //
-    .catch(() => process.env.DATABASE_URL);
+const DATABASE_URL = process.env.DATABASE_URL;
 
 const adapter = new PrismaNeon({ connectionString: DATABASE_URL });
 const prisma = new PrismaClient({ adapter });

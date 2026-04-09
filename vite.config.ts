@@ -4,5 +4,5 @@ import lucidePreprocess from 'vite-plugin-lucide-preprocess';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-    plugins: [lucidePreprocess(), tailwindcss(), sveltekit()], //
+  plugins: [lucidePreprocess(), tailwindcss(), sveltekit()], //
 });
