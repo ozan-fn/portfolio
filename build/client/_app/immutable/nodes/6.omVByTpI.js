@@ -1,0 +1,1 @@
+import"../chunks/DsnmJJEf.js";import{e as o,$ as t}from"../chunks/COJEdS0d.js";import{h as a}from"../chunks/OR8vJziY.js";function p(e){a("pub15m",r=>{o(()=>{t.title="Contact | Portfolio"})})}export{p as component};

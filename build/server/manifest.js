@@ -11,52 +11,54 @@ const manifest = (() => {
 		mimeTypes: { ".txt": "text/plain" },
 		_: {
 			client: {
-				start: "_app/immutable/entry/start.CDFpwXgt.js",
-				app: "_app/immutable/entry/app.CoHi-3Jm.js",
+				start: "_app/immutable/entry/start.jMoaXPz3.js",
+				app: "_app/immutable/entry/app.Buhkw6F2.js",
 				imports: [
-					"_app/immutable/entry/start.CDFpwXgt.js",
-					"_app/immutable/chunks/CpB61uSw.js",
-					"_app/immutable/chunks/Dcpp0Cf0.js",
-					"_app/immutable/chunks/VvJ03jQm.js",
-					"_app/immutable/chunks/Djhkul0P.js",
-					"_app/immutable/chunks/aMc0A5rF.js",
-					"_app/immutable/entry/app.CoHi-3Jm.js",
-					"_app/immutable/chunks/VvJ03jQm.js",
-					"_app/immutable/chunks/Djhkul0P.js",
-					"_app/immutable/chunks/aMc0A5rF.js",
+					"_app/immutable/entry/start.jMoaXPz3.js",
+					"_app/immutable/chunks/CZfYni6s.js",
+					"_app/immutable/chunks/Dp8XMXav.js",
+					"_app/immutable/chunks/COJEdS0d.js",
+					"_app/immutable/chunks/Czy_XTH7.js",
+					"_app/immutable/chunks/CkNGqTXG.js",
+					"_app/immutable/entry/app.Buhkw6F2.js",
+					"_app/immutable/chunks/COJEdS0d.js",
+					"_app/immutable/chunks/Czy_XTH7.js",
+					"_app/immutable/chunks/CkNGqTXG.js",
 					"_app/immutable/chunks/DsnmJJEf.js",
-					"_app/immutable/chunks/Dcpp0Cf0.js",
-					"_app/immutable/chunks/Bjwghsge.js",
-					"_app/immutable/chunks/DCbJqxLu.js",
-					"_app/immutable/chunks/BiW6gY5k.js"
+					"_app/immutable/chunks/Dp8XMXav.js",
+					"_app/immutable/chunks/CYTOpgq_.js",
+					"_app/immutable/chunks/CRRNmWFo.js",
+					"_app/immutable/chunks/D4bx8ejP.js"
 				],
 				stylesheets: [],
 				fonts: [],
 				uses_env_dynamic_public: false
 			},
 			nodes: [
-				__memo(() => import("./chunks/0-DxV78w04.js")),
-				__memo(() => import("./chunks/1-BRPBJjjK.js")),
-				__memo(() => import("./chunks/2-CxVOyBoM.js")),
-				__memo(() => import("./chunks/3-D-5XsXN4.js")),
-				__memo(() => import("./chunks/4-D0UfDWZX.js")),
-				__memo(() => import("./chunks/5-DCBgAMFJ.js")),
-				__memo(() => import("./chunks/6-D43v5Xy5.js")),
-				__memo(() => import("./chunks/7-Cg7K0xgp.js")),
-				__memo(() => import("./chunks/8-DxHLSkrU.js")),
-				__memo(() => import("./chunks/9-2-4Kmob0.js")),
-				__memo(() => import("./chunks/10-EzBjOZZb.js")),
-				__memo(() => import("./chunks/11-Dpb-FHIz.js")),
-				__memo(() => import("./chunks/12-D5OAxqKf.js")),
-				__memo(() => import("./chunks/13-CzPhIUtZ.js")),
-				__memo(() => import("./chunks/14-CnZaff8X.js")),
-				__memo(() => import("./chunks/15-B1bY2DIY.js")),
-				__memo(() => import("./chunks/16-CEFV0Oas.js")),
-				__memo(() => import("./chunks/17-1Tg94rrg.js")),
-				__memo(() => import("./chunks/18-CV7-6xEt.js")),
-				__memo(() => import("./chunks/19-4F1_hJU5.js")),
-				__memo(() => import("./chunks/20-CnCoD5I_.js")),
-				__memo(() => import("./chunks/21-D1dKK0l-.js"))
+				__memo(() => import("./chunks/0-CP6P4yT_.js")),
+				__memo(() => import("./chunks/1-DTInCoOz.js")),
+				__memo(() => import("./chunks/2-BcWG3tpf.js")),
+				__memo(() => import("./chunks/3-CqCASRJY.js")),
+				__memo(() => import("./chunks/4-BcqjpDhu.js")),
+				__memo(() => import("./chunks/5-CYyQwxx0.js")),
+				__memo(() => import("./chunks/6-B87QECpJ.js")),
+				__memo(() => import("./chunks/7-nKRaAKCk.js")),
+				__memo(() => import("./chunks/8-Dff3nBfj.js")),
+				__memo(() => import("./chunks/9-CXRs1OB3.js")),
+				__memo(() => import("./chunks/10-CRuSPOPj.js")),
+				__memo(() => import("./chunks/11-DrXnny8E.js")),
+				__memo(() => import("./chunks/12-Cy0odaJY.js")),
+				__memo(() => import("./chunks/13-fHuWItCc.js")),
+				__memo(() => import("./chunks/14-CO6g6jnL.js")),
+				__memo(() => import("./chunks/15-F7aJaSsx.js")),
+				__memo(() => import("./chunks/16-CUufg2fm.js")),
+				__memo(() => import("./chunks/17-1d4QWKDz.js")),
+				__memo(() => import("./chunks/18-CuFR1WPE.js")),
+				__memo(() => import("./chunks/19-BzFE1gpy.js")),
+				__memo(() => import("./chunks/20-C_0hAoNT.js")),
+				__memo(() => import("./chunks/21-DfuGqV2n.js")),
+				__memo(() => import("./chunks/22-Jhjk2ZVP.js")),
+				__memo(() => import("./chunks/23-1mPBsXGG.js"))
 			],
 			remotes: {},
 			routes: [
@@ -165,13 +167,40 @@ const manifest = (() => {
 					endpoint: null
 				},
 				{
+					id: "/(protected)/dashboard/certificates/new",
+					pattern: /^\/dashboard\/certificates\/new\/?$/,
+					params: [],
+					page: {
+						layouts: [0, 3],
+						errors: [1, ,],
+						leaf: 17
+					},
+					endpoint: null
+				},
+				{
+					id: "/(protected)/dashboard/certificates/[id]",
+					pattern: /^\/dashboard\/certificates\/([^/]+?)\/?$/,
+					params: [{
+						"name": "id",
+						"optional": false,
+						"rest": false,
+						"chained": false
+					}],
+					page: {
+						layouts: [0, 3],
+						errors: [1, ,],
+						leaf: 18
+					},
+					endpoint: null
+				},
+				{
 					id: "/(protected)/dashboard/projects",
 					pattern: /^\/dashboard\/projects\/?$/,
 					params: [],
 					page: {
 						layouts: [0, 3],
 						errors: [1, ,],
-						leaf: 17
+						leaf: 19
 					},
 					endpoint: null
 				},
@@ -182,7 +211,7 @@ const manifest = (() => {
 					page: {
 						layouts: [0, 3],
 						errors: [1, ,],
-						leaf: 18
+						leaf: 20
 					},
 					endpoint: null
 				},
@@ -198,7 +227,7 @@ const manifest = (() => {
 					page: {
 						layouts: [0, 3],
 						errors: [1, ,],
-						leaf: 19
+						leaf: 21
 					},
 					endpoint: null
 				},
@@ -214,7 +243,7 @@ const manifest = (() => {
 					page: {
 						layouts: [0, 3],
 						errors: [1, ,],
-						leaf: 20
+						leaf: 22
 					},
 					endpoint: null
 				},
@@ -225,7 +254,7 @@ const manifest = (() => {
 					page: {
 						layouts: [0, 3],
 						errors: [1, ,],
-						leaf: 21
+						leaf: 23
 					},
 					endpoint: null
 				},
