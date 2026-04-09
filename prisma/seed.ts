@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { auth } from '../src/lib/auth';
 import { PrismaClient } from '@prisma/client';
 import { PrismaNeon } from '@prisma/adapter-neon';
