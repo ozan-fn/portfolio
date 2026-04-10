@@ -4,122 +4,137 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client-js"
-  // output   = "./generated"
+    provider = "prisma-client-js"
+    // output   = "./generated"
 }
 
 datasource db {
-  provider = "postgresql"
+    provider = "postgresql"
 }
 
 model User {
-  id            String    @id
-  name          String
-  email         String
-  emailVerified Boolean   @default(false)
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+    id            String    @id
+    name          String
+    email         String
+    emailVerified Boolean   @default(false)
+    image         String?
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+    sessions      Session[]
+    accounts      Account[]
 
-  @@unique([email])
-  @@map("user")
+    @@unique([email])
+    @@map("user")
 }
 
 model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id        String   @id
+    expiresAt DateTime
+    token     String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    ipAddress String?
+    userAgent String?
+    userId    String
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
-  @@index([userId])
-  @@map("session")
+    @@unique([token])
+    @@index([userId])
+    @@map("session")
 }
 
 model Account {
-  id                    String    @id
-  accountId             String
-  providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+    id                    String    @id
+    accountId             String
+    providerId            String
+    userId                String
+    user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    accessToken           String?
+    refreshToken          String?
+    idToken               String?
+    accessTokenExpiresAt  DateTime?
+    refreshTokenExpiresAt DateTime?
+    scope                 String?
+    password              String?
+    createdAt             DateTime  @default(now())
+    updatedAt             DateTime  @updatedAt
 
-  @@index([userId])
-  @@map("account")
+    @@index([userId])
+    @@map("account")
 }
 
 model Verification {
-  id         String   @id
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+    id         String   @id
+    identifier String
+    value      String
+    expiresAt  DateTime
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
 
-  @@index([identifier])
-  @@map("verification")
+    @@index([identifier])
+    @@map("verification")
 }
 
 enum ProjectStatus {
-  COMPLETED
-  IN_PROGRESS
-  ARCHIVED
+    COMPLETED
+    IN_PROGRESS
+    ARCHIVED
 }
 
 model Project {
-  id          String        @id @default(uuid())
-  title       String        @db.VarChar(100)
-  thumbnail   String?       @db.Text
-  description String        @db.Text
-  content     String?       @db.Text
-  techStack   String[]
-  githubUrl   String?       @db.Text
-  demoUrl     String?       @db.Text
-  status      ProjectStatus @default(COMPLETED)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+    id          String        @id @default(uuid())
+    title       String        @db.VarChar(100)
+    thumbnail   String?       @db.Text
+    description String        @db.Text
+    content     String?       @db.Text
+    techStack   String[]
+    githubUrl   String?       @db.Text
+    demoUrl     String?       @db.Text
+    env         String?       @db.Text
+    status      ProjectStatus @default(COMPLETED)
+    createdAt   DateTime      @default(now())
+    updatedAt   DateTime      @updatedAt
 
-  @@map("projects")
+    @@map("projects")
+}
+
+model Certificate {
+    id         String    @id @default(uuid())
+    title      String    @db.VarChar(100)
+    issuer     String    @db.VarChar(100)
+    issueDate  DateTime
+    expiryDate DateTime?
+    thumbnail  String?   @db.Text
+    verifyUrl  String?   @db.Text
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
+
+    @@map("certificates")
 }
 
 model Category {
-  id        String     @id @default(uuid())
-  name      String     @unique @db.VarChar(50)
-  slug      String     @unique @db.VarChar(50)
-  posts     BlogPost[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+    id        String     @id @default(uuid())
+    name      String     @unique @db.VarChar(50)
+    slug      String     @unique @db.VarChar(50)
+    posts     BlogPost[]
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
 
-  @@map("categories")
+    @@map("categories")
 }
 
 model BlogPost {
-  id          String   @id @default(uuid())
-  title       String   @db.VarChar(255)
-  slug        String   @unique @db.VarChar(255)
-  content     String   @db.Text
-  image       String?  @db.Text
-  published   Boolean  @default(false)
-  categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+    id         String   @id @default(uuid())
+    title      String   @db.VarChar(255)
+    slug       String   @unique @db.VarChar(255)
+    content    String   @db.Text
+    image      String?  @db.Text
+    published  Boolean  @default(false)
+    categoryId String
+    category   Category @relation(fields: [categoryId], references: [id])
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
 
-  @@index([categoryId])
-  @@map("blog_posts")
+    @@index([categoryId])
+    @@map("blog_posts")
 }
