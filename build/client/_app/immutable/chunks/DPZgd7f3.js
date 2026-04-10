@@ -1,1 +1,0 @@
-import"./DsnmJJEf.js";import{s as t,r as a}from"./CYTOpgq_.js";import{I as p}from"./B0xGDxMp.js";function m(e,r){let o=a(r,["$$slots","$$events","$$legacy"]);const s=[["path",{d:"M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"}],["rect",{width:"20",height:"14",x:"2",y:"6",rx:"2"}]];p(e,t({name:"briefcase"},()=>o,{get iconNode(){return s}}))}export{m as B};
