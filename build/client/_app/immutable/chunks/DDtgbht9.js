@@ -1,1 +1,0 @@
-import"./DsnmJJEf.js";import{s,r as a}from"./e11Tx_iV.js";import{I as e}from"./qinMVjST.js";function c(o,r){let p=a(r,["$$slots","$$events","$$legacy"]);const t=[["path",{d:"m21 16-4 4-4-4"}],["path",{d:"M17 20V4"}],["path",{d:"m3 8 4-4 4 4"}],["path",{d:"M7 4v16"}]];e(o,s({name:"arrow-up-down"},()=>p,{get iconNode(){return t}}))}export{c as A};

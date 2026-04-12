@@ -1,1 +1,0 @@
-import"./DsnmJJEf.js";import{s as t,r as c}from"./e11Tx_iV.js";import{I as p}from"./qinMVjST.js";function m(r,o){let e=c(o,["$$slots","$$events","$$legacy"]);const s=[["path",{d:"m21 21-4.34-4.34"}],["circle",{cx:"11",cy:"11",r:"8"}]];p(r,t({name:"search"},()=>e,{get iconNode(){return s}}))}export{m as S};
