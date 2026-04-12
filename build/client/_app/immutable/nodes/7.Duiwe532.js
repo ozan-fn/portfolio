@@ -1,1 +1,0 @@
-import{C as e,et as t,ot as n}from"../chunks/DYrfgn9M.js";import"../chunks/CCi4sbZS.js";function r(r){e(`pub15m`,e=>{t(()=>{n.title=`Contact | Portfolio`})})}export{r as component};
