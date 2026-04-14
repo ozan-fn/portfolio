@@ -1,7 +1,7 @@
 import prisma from "$lib/prisma";
 import { error, fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
-import { uploadFile } from "$lib/storage";
+import { uploadFile, deleteFile } from "$lib/storage";
 
 export const load: PageServerLoad = async ({ params }) => {
   const post = await prisma.blogPost.findUnique({
