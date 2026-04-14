@@ -16,6 +16,8 @@
   import { motion } from "@humanspeak/svelte-motion";
   import { fade } from "svelte/transition";
 
+  let { user = null } = $props();
+
   const menuItems = [
     { id: "home", label: "Home", icon: Home, path: "/" },
     { id: "projects", label: "Projects", icon: FolderCode, path: "/projects" },
@@ -41,11 +43,11 @@
 <div class="md:hidden flex items-center justify-between w-full bg-card border border-muted/50 p-4 rounded-xl shadow-sm">
   <div class="flex items-center gap-3">
     <Avatar class="size-10 ring-2 ring-muted/20">
-      <AvatarImage src={profile} alt="Akhmad Fauzan" />
+      <AvatarImage src={user?.image || profile} alt={user?.name || "Akhmad Fauzan"} />
       <AvatarFallback>AF</AvatarFallback>
     </Avatar>
     <div>
-      <h2 class="font-bold text-sm tracking-tight">Akhmad Fauzan</h2>
+      <h2 class="font-bold text-sm tracking-tight">{user?.name || "Akhmad Fauzan"}</h2>
       <p class="text-[10px] text-muted-foreground font-mono uppercase">Developer</p>
     </div>
   </div>
@@ -82,14 +84,14 @@
       <div class="flex flex-col items-center text-center mb-8">
         <div class="relative mb-5">
           <Avatar class="size-24 ring-4 ring-muted/20">
-            <AvatarImage src={profile} alt="Akhmad Fauzan" />
+            <AvatarImage src={user?.image || profile} alt={user?.name || "Akhmad Fauzan"} />
             <AvatarFallback>AF</AvatarFallback>
           </Avatar>
           <div class="absolute bottom-1 right-1 size-5 bg-background rounded-full flex items-center justify-center border-2 border-background shadow-sm">
             <Circle class="size-3 fill-green-500 text-green-500" />
           </div>
         </div>
-        <h2 class="text-xl font-bold tracking-tight">Akhmad Fauzan</h2>
+        <h2 class="text-xl font-bold tracking-tight">{user?.name || "Akhmad Fauzan"}</h2>
         <p class="text-[10px] text-muted-foreground font-mono uppercase tracking-[0.2em] mt-1.5 opacity-80">Developer • Purbalingga</p>
       </div>
 
