@@ -160,33 +160,44 @@
 
                   <!-- Status toggle -->
                   <Table.Cell>
-                    <form
-                      action="?/togglePublish"
-                      method="POST"
-                      use:enhance={() => {
-                        isToggling = post.id;
-                        return async ({ update }) => {
-                          await update();
-                          isToggling = null;
-                        };
-                      }}
-                    >
-                      <input type="hidden" name="id" value={post.id} />
-                      <input type="hidden" name="published" value={post.published} />
-                      <button
-                        type="submit"
-                        disabled={isToggling === post.id}
-                        title="Click to toggle"
-                        class="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-tight transition-opacity hover:opacity-80 disabled:opacity-50
-                          {post.published ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-muted text-muted-foreground border-border/40'}"
+                    <div class="flex flex-col gap-1.5 min-w-[100px]">
+                      <form
+                        action="?/togglePublish"
+                        method="POST"
+                        use:enhance={() => {
+                          isToggling = post.id;
+                          return async ({ update }) => {
+                            await update();
+                            isToggling = null;
+                          };
+                        }}
                       >
-                        {#if post.published}
-                          <Globe class="h-3 w-3" /> Published
-                        {:else}
-                          <Lock class="h-3 w-3" /> Draft
-                        {/if}
-                      </button>
-                    </form>
+                        <input type="hidden" name="id" value={post.id} />
+                        <input type="hidden" name="published" value={post.published} />
+                        <button
+                          type="submit"
+                          disabled={isToggling === post.id}
+                          title="Click to toggle Status"
+                          class="inline-flex w-full items-center justify-between gap-1 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-tight transition-all hover:opacity-80 disabled:opacity-50
+                            {post.published ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 shadow-sm' : 'bg-muted text-muted-foreground border-border/40'}"
+                        >
+                          <span class="flex items-center gap-1.5">
+                            {#if post.published}
+                              <Globe class="h-3 w-3" /> Published
+                            {:else}
+                              <Lock class="h-3 w-3" /> Draft
+                            {/if}
+                          </span>
+                          {#if isToggling === post.id}
+                            <Loader2 class="h-2.5 w-2.5 animate-spin" />
+                          {/if}
+                        </button>
+                      </form>
+
+                      {#if post.featured}
+                        <div class="inline-flex w-fit items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20 text-[9px] font-bold uppercase tracking-wider">★ Featured</div>
+                      {/if}
+                    </div>
                   </Table.Cell>
 
                   <!-- Read time -->

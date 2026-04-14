@@ -22,6 +22,7 @@ export const actions: Actions = {
     const formData = await request.formData();
 
     const title = formData.get("title") as string;
+    const slug = formData.get("slug") as string;
     const description = formData.get("description") as string;
     const content = formData.get("content") as string;
     const thumbnailFile = formData.get("thumbnail") as File;
@@ -29,11 +30,13 @@ export const actions: Actions = {
     const demoUrl = formData.get("demoUrl") as string;
     const env = formData.get("env") as string;
     const status = formData.get("status") as any;
+    const featured = formData.get("featured") === "on";
+    const order = parseInt(formData.get("order") as string) || 0;
     const techStackString = formData.get("techStack") as string;
 
-    if (!title || !description) {
+    if (!title || !slug || !description) {
       return fail(400, {
-        message: "Title and description are required",
+        message: "Title, slug, and description are required",
       });
     }
 
@@ -64,6 +67,7 @@ export const actions: Actions = {
         where: { id: params.id },
         data: {
           title,
+          slug,
           description,
           content,
           ...(thumbnail && { thumbnail }),
@@ -72,11 +76,13 @@ export const actions: Actions = {
           env,
           status,
           techStack,
+          featured,
+          order,
         } as any,
       });
     } catch (err) {
       console.error("Update project error:", err);
-      return fail(500, { message: "Failed to update project" });
+      return fail(500, { message: "Failed to update project. Ensure slug is unique." });
     }
 
     throw redirect(303, "/dashboard/projects");

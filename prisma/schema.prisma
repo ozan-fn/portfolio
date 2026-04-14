@@ -84,6 +84,7 @@ enum ProjectStatus {
 model Project {
     id          String        @id @default(uuid())
     title       String        @db.VarChar(100)
+    slug        String        @unique @db.VarChar(120)
     thumbnail   String?       @db.Text
     description String        @db.Text
     content     String?       @db.Text
@@ -92,6 +93,8 @@ model Project {
     demoUrl     String?       @db.Text
     env         String?       @db.Text
     status      ProjectStatus @default(COMPLETED)
+    featured    Boolean       @default(false)
+    order       Int           @default(0)
     createdAt   DateTime      @default(now())
     updatedAt   DateTime      @updatedAt
 
@@ -101,11 +104,14 @@ model Project {
 model Certificate {
     id         String    @id @default(uuid())
     title      String    @db.VarChar(100)
+    slug       String    @unique @db.VarChar(120)
     issuer     String    @db.VarChar(100)
     issueDate  DateTime
     expiryDate DateTime?
     thumbnail  String?   @db.Text
     verifyUrl  String?   @db.Text
+    featured   Boolean   @default(false)
+    order      Int       @default(0)
     createdAt  DateTime  @default(now())
     updatedAt  DateTime  @updatedAt
 
@@ -117,6 +123,7 @@ model Category {
     name      String     @unique @db.VarChar(50)
     slug      String     @unique @db.VarChar(50)
     posts     BlogPost[]
+    order     Int        @default(0)
     createdAt DateTime   @default(now())
     updatedAt DateTime   @updatedAt
 
@@ -130,6 +137,8 @@ model BlogPost {
     content    String   @db.Text
     image      String?  @db.Text
     published  Boolean  @default(false)
+    featured   Boolean  @default(false)
+    tags       String?  @db.Text
     categoryId String
     category   Category @relation(fields: [categoryId], references: [id])
     createdAt  DateTime @default(now())

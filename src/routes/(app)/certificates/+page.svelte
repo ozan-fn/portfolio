@@ -3,41 +3,15 @@
   import { Button } from "$lib/components/ui/button";
   import * as AspectRatio from "$lib/components/ui/aspect-ratio";
   import { Award, ExternalLink, Calendar } from "@lucide/svelte";
+  import type { PageData } from "./$types";
+  import { getFileUrl } from "$lib/storage.client";
 
-  // ── dummy data ─────────────────────────────────────────────────────────────
-  const dummyCertificates = [
-    {
-      id: "1",
-      title: "Google Data Analytics Professional Certificate",
-      issuer: "Coursera",
-      issueDate: "2024-01-15",
-      thumbnail: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop",
-      verifyUrl: "https://coursera.org",
-    },
-    {
-      id: "2",
-      title: "AWS Certified Solutions Architect – Associate",
-      issuer: "Amazon Web Services",
-      issueDate: "2024-03-20",
-      thumbnail: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1600&auto=format&fit=crop",
-      verifyUrl: "https://aws.amazon.com",
-    },
-    {
-      id: "3",
-      title: "Full Stack Open 2024 - TypeScript & React",
-      issuer: "University of Helsinki",
-      issueDate: "2024-04-10",
-      thumbnail: "https://images.unsplash.com/photo-1555099962-4199c345e5dd?q=80&w=1600&auto=format&fit=crop",
-      verifyUrl: "https://fullstackopen.com",
-    },
-  ];
-
-  // Gunakan data dari backend jika ada, jika tidak gunakan dummy data
-  const certificates = $derived(dummyCertificates);
+  let { data }: { data: PageData } = $props();
+  const certificates = $derived(data.certificates);
 
   // ── helpers ──────────────────────────────────────────────────────────────────
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("id-ID", {
+  const formatDate = (date: Date | string) => {
+    return new Date(date).toLocaleDateString("id-ID", {
       year: "numeric",
       month: "short",
     });
@@ -87,7 +61,7 @@
           <div class="relative overflow-hidden border-b border-border">
             <AspectRatio.Root ratio={16 / 9}>
               {#if cert.thumbnail}
-                <img src={cert.thumbnail} alt={cert.title} class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105" />
+                <img src={getFileUrl(cert.thumbnail)} alt={cert.title} class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105" />
               {:else}
                 <div class="w-full h-full bg-muted/50 flex items-center justify-center transition-transform duration-700 group-hover:scale-105">
                   <Award size={48} class="text-muted-foreground opacity-20" />
@@ -100,6 +74,11 @@
                 {cert.issuer}
               </span>
             </div>
+            {#if cert.featured}
+              <div class="absolute top-3 right-3">
+                <span class="text-[9px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-md bg-primary text-primary-foreground shadow-sm"> Featured </span>
+              </div>
+            {/if}
           </div>
 
           <div class="p-5 flex flex-col flex-1 gap-4">

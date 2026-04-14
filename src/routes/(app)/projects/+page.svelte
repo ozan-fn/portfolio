@@ -1,53 +1,13 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
-  import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
   import * as AspectRatio from "$lib/components/ui/aspect-ratio";
   import { Computer, ExternalLink, ArrowRight, Code2 } from "@lucide/svelte";
+  import type { PageData } from "./$types";
+  import { getFileUrl } from "$lib/storage.client";
 
-  // Dummy Data
-  const projects = [
-    {
-      id: "1",
-      title: "E-Commerce Microservices",
-      description: "Arsitektur microservices performa tinggi menggunakan Golang dan gRPC. Dilengkapi dengan sistem pembayaran real-time dan manajemen inventaris yang skalabel.",
-      thumbnail: "https://images.unsplash.com/photo-1557821552-17105176677c?q=80&w=1600&auto=format&fit=crop",
-      status: "COMPLETED",
-      techStack: ["Golang", "Nats", "PostgreSQL", "Redis"],
-      githubUrl: "https://github.com",
-      demoUrl: "https://demo.com",
-    },
-    {
-      id: "2",
-      title: "Rust Search Engine",
-      description: "Mesin pencari teks lengkap (full-text search) yang dibangun dengan Rust. Fokus pada efisiensi memori dan kecepatan indexing jutaan dokumen dalam hitungan detik.",
-      thumbnail: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1600&auto=format&fit=crop",
-      status: "IN_PROGRESS",
-      techStack: ["Rust", "Tokio", "WebAssembly"],
-      githubUrl: "https://github.com",
-      demoUrl: null,
-    },
-    {
-      id: "3",
-      title: "Portfolio Dashboard",
-      description: "Dashboard admin interaktif untuk mengelola konten portfolio. Dibangun dengan SvelteKit 5 dan Better Auth untuk keamanan tingkat tinggi.",
-      thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1600&auto=format&fit=crop",
-      status: "COMPLETED",
-      techStack: ["SvelteKit", "Tailwind", "Prisma"],
-      githubUrl: "https://github.com",
-      demoUrl: "https://demo.com",
-    },
-    {
-      id: "4",
-      title: "AI Chat Assistant",
-      description: "Integrasi LLM untuk asisten koding cerdas. Menggunakan stream response untuk pengalaman pengguna yang lebih cepat dan responsif.",
-      thumbnail: "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=1600&auto=format&fit=crop",
-      status: "ARCHIVED",
-      techStack: ["Python", "OpenAI", "React"],
-      githubUrl: null,
-      demoUrl: null,
-    },
-  ];
+  let { data }: { data: PageData } = $props();
+  let projects = $derived(data.projects);
 
   // Helper warna status yang disesuaikan dengan tema flat/modern
   const statusMap: Record<string, string> = {
@@ -94,7 +54,7 @@
       <Card.Root class="group rounded-2xl border border-border bg-card overflow-hidden flex flex-col transition-all hover:-translate-y-1 hover:shadow-lg">
         <div class="relative overflow-hidden border-b border-border">
           <AspectRatio.Root ratio={16 / 9}>
-            <img src={project.thumbnail} alt={project.title} class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105" />
+            <img src={getFileUrl(project.thumbnail)} alt={project.title} class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105" />
           </AspectRatio.Root>
 
           <div class="absolute top-3 left-3">
@@ -102,6 +62,11 @@
               {project.status.replace("_", " ")}
             </span>
           </div>
+          {#if project.featured}
+            <div class="absolute top-3 right-3">
+              <span class="text-[9px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-md bg-primary text-primary-foreground shadow-sm"> Featured </span>
+            </div>
+          {/if}
         </div>
 
         <div class="p-5 flex flex-col flex-1 gap-4">
@@ -132,7 +97,7 @@
               {/if}
             </div>
 
-            <Button variant="link" class="h-auto p-0 text-[10px] font-bold tracking-widest uppercase text-primary group/link" href="/projects/{project.id}">
+            <Button variant="link" class="h-auto p-0 text-[10px] font-bold tracking-widest uppercase text-primary group/link" href="/projects/{project.slug}">
               Details
               <ArrowRight size={14} class="ml-1 transition-transform group-hover/link:translate-x-1" />
             </Button>

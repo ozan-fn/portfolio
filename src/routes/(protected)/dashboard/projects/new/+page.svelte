@@ -5,6 +5,15 @@
   import { Label } from "$lib/components/ui/label/index.js";
 
   let isLoading = $state(false);
+  let title = $state("");
+  let slug = $derived(
+    title
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, ""),
+  );
 
   async function handleFileChange(e: Event) {
     const input = e.target as HTMLInputElement;
@@ -67,14 +76,31 @@
 <CrudFormLayout enctype="multipart/form-data" bind:isLoading cancelUrl="/dashboard/projects" submitLabel="Create Project">
   {#snippet main()}
     <div class="flex flex-col gap-4">
-      <div class="grid gap-2">
-        <Label for="title">Project Title</Label>
-        <Input id="title" name="title" placeholder="e.g. My Awesome Portfolio" required />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid gap-2">
+          <Label for="title">Project Title</Label>
+          <Input id="title" name="title" bind:value={title} placeholder="e.g. My Awesome Portfolio" required />
+        </div>
+        <div class="grid gap-2">
+          <Label for="slug">Slug (URL)</Label>
+          <Input id="slug" name="slug" value={slug} placeholder="e.g. my-awesome-portfolio" readonly required class="bg-muted" />
+        </div>
       </div>
 
       <div class="grid gap-2">
         <Label for="description">Short Description</Label>
         <Input id="description" name="description" placeholder="A brief summary of the project" required />
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid gap-2">
+          <Label for="order">Display Order</Label>
+          <Input id="order" name="order" type="number" value="0" />
+        </div>
+        <div class="flex items-center space-x-2 pt-8">
+          <input type="checkbox" id="featured" name="featured" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
+          <Label for="featured">Featured Project</Label>
+        </div>
       </div>
 
       <div class="grid gap-2">

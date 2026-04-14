@@ -1,1 +1,0 @@
-import{o as e,s as t}from"./D1w_RFSq.js";import"./CCi4sbZS.js";import{t as n}from"./Be3d-_on.js";function r(r,i){let a=e(i,[`$$slots`,`$$events`,`$$legacy`]),o=[[`path`,{d:`M8 2v4`}],[`path`,{d:`M16 2v4`}],[`rect`,{width:`18`,height:`18`,x:`3`,y:`4`,rx:`2`}],[`path`,{d:`M3 10h18`}]];n(r,t({name:`calendar`},()=>a,{get iconNode(){return o}}))}export{r as t};

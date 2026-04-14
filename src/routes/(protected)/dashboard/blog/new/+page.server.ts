@@ -1,68 +1,69 @@
-import prisma from '$lib/prisma';
-import { fail, redirect } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
+import prisma from "$lib/prisma";
+import { fail, redirect } from "@sveltejs/kit";
+import type { Actions, PageServerLoad } from "./$types";
+import { uploadImage } from "$lib/storage";
 
 export const load: PageServerLoad = async () => {
-    const categories = await prisma.category.findMany({
-        orderBy: {
-            name: 'asc'
-        }
-    });
+  const categories = await prisma.category.findMany({
+    orderBy: {
+      name: "asc",
+    },
+  });
 
-    return {
-        categories
-    };
+  return {
+    categories,
+  };
 };
 
 export const actions: Actions = {
-    default: async ({ request }) => {
-        const formData = await request.formData();
+  default: async ({ request }) => {
+    const formData = await request.formData();
 
-        const title = formData.get('title') as string;
-        const content = formData.get('content') as string;
-        const image = formData.get('image') as string;
-        const categoryId = formData.get('categoryId') as string;
-        const published = formData.get('published') === 'true';
+    const title = formData.get("title") as string;
+    const slug = formData.get("slug") as string;
+    const content = formData.get("content") as string;
+    const imageFile = formData.get("image") as File;
+    const categoryId = formData.get("categoryId") as string;
+    const tags = formData.get("tags") as string;
+    const published = formData.get("published") === "true";
+    const featured = formData.get("featured") === "on";
 
-        // Basic validation
-        if (!title || !content || !categoryId) {
-            return fail(400, {
-                error: 'Title, content, and category are required',
-                values: { title, content, image, categoryId, published }
-            });
-        }
-
-        // Simple slug generation
-        const slug = title
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/(^-|-$)+/g, '');
-
-        try {
-            // Check if slug already exists
-            const existingPost = await prisma.blogPost.findUnique({
-                where: { slug }
-            });
-
-            const finalSlug = existingPost
-                ? `${slug}-${Math.floor(Math.random() * 1000)}`
-                : slug;
-
-            await prisma.blogPost.create({
-                data: {
-                    title,
-                    slug: finalSlug,
-                    content,
-                    image,
-                    published,
-                    categoryId
-                }
-            });
-        } catch (err) {
-            console.error(err);
-            return fail(500, { error: 'Failed to create blog post' });
-        }
-
-        throw redirect(303, '/dashboard/blog');
+    // Basic validation
+    if (!title || !slug || !content || !categoryId) {
+      return fail(400, {
+        error: "Title, slug, content, and category are required",
+        values: { title, slug, content, categoryId, tags, published, featured },
+      });
     }
+
+    let image = null;
+    if (imageFile && imageFile.size > 0) {
+      try {
+        const buffer = Buffer.from(await imageFile.arrayBuffer());
+        image = await uploadImage(buffer, "blog", imageFile.type);
+      } catch (error) {
+        console.error("Upload image error:", error);
+      }
+    }
+
+    try {
+      await prisma.blogPost.create({
+        data: {
+          title,
+          slug,
+          content,
+          image,
+          tags,
+          published,
+          featured,
+          categoryId,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      return fail(500, { error: "Failed to create blog post. Ensure slug is unique." });
+    }
+
+    throw redirect(303, "/dashboard/blog");
+  },
 };

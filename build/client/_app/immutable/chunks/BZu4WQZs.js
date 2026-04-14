@@ -1,1 +1,0 @@
-import{o as e,s as t}from"./D1w_RFSq.js";import"./CCi4sbZS.js";import{t as n}from"./Be3d-_on.js";function r(r,i){let a=e(i,[`$$slots`,`$$events`,`$$legacy`]),o=[[`path`,{d:`m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7`}],[`rect`,{x:`2`,y:`4`,width:`20`,height:`16`,rx:`2`}]];n(r,t({name:`mail`},()=>a,{get iconNode(){return o}}))}export{r as t};

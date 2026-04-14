@@ -1,1 +1,0 @@
-import{o as e,s as t}from"./D1w_RFSq.js";import"./CCi4sbZS.js";import{t as n}from"./Be3d-_on.js";function r(r,i){let a=e(i,[`$$slots`,`$$events`,`$$legacy`]),o=[[`path`,{d:`M21 12a9 9 0 1 1-6.219-8.56`}]];n(r,t({name:`loader-circle`},()=>a,{get iconNode(){return o}}))}export{r as t};

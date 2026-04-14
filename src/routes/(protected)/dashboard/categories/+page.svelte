@@ -7,18 +7,55 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
-  import { Plus, Pencil, Trash2, Check, X, Loader2, Tag } from "@lucide/svelte";
+  import { Plus, Pencil, Trash2, Check, X, Loader2, Tag, ArrowUpDown } from "@lucide/svelte";
+  import { badgeVariants } from "$lib/components/ui/badge";
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
 
   let isLoading = $state(false);
   let editingId = $state<string | null>(null);
   let editValue = $state("");
+  let editOrder = $state(0);
   let deleteTarget = $state<{ id: string; name: string } | null>(null);
 
-  function startEditing(category: { id: string; name: string }) {
+  // Bulk input management
+  let bulkInput = $state("");
+  let newCategories = $state<string[]>([]);
+
+  function addFromInput(input: string) {
+    const items = input
+      .split(/[\s,]+/)
+      .map((t) => t.trim())
+      .filter((t) => t !== "" && !newCategories.includes(t));
+
+    if (items.length > 0) {
+      newCategories = [...newCategories, ...items];
+    }
+  }
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === " " || e.key === "Enter") {
+      e.preventDefault();
+      addFromInput(bulkInput);
+      bulkInput = "";
+    }
+  }
+
+  function handlePaste(e: ClipboardEvent) {
+    e.preventDefault();
+    const pastedText = e.clipboardData?.getData("text") || "";
+    addFromInput(pastedText);
+    bulkInput = "";
+  }
+
+  function removeNewCategory(categoryToRemove: string) {
+    newCategories = newCategories.filter((c) => c !== categoryToRemove);
+  }
+
+  function startEditing(category: { id: string; name: string; order: number }) {
     editingId = category.id;
     editValue = category.name;
+    editOrder = category.order;
   }
 
   function cancelEditing() {
@@ -52,6 +89,7 @@
           <Table.Root>
             <Table.Header>
               <Table.Row class="bg-muted/30 hover:bg-muted/30">
+                <Table.Head class="text-xs font-semibold uppercase tracking-wide text-muted-foreground w-[50px]">Order</Table.Head>
                 <Table.Head class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Name</Table.Head>
                 <Table.Head class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Slug</Table.Head>
                 <Table.Head class="text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground w-[80px]">Posts</Table.Head>
@@ -62,15 +100,27 @@
             <Table.Body>
               {#if data.categories.length === 0}
                 <Table.Row>
-                  <Table.Cell colspan={4} class="py-12 text-center text-sm text-muted-foreground">No categories yet. Add your first one!</Table.Cell>
+                  <Table.Cell colspan={5} class="py-12 text-center text-sm text-muted-foreground">No categories yet. Add your first one!</Table.Cell>
                 </Table.Row>
               {:else}
                 {#each data.categories as category (category.id)}
                   <Table.Row class="group hover:bg-muted/20">
+                    <!-- Order field -->
+                    <Table.Cell>
+                      {#if editingId === category.id}
+                        <Input name="order" type="number" bind:value={editOrder} class="h-8 w-16 px-2 text-xs" form="update-form-{category.id}" />
+                      {:else}
+                        <span class="text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded border border-border/40">
+                          {category.order}
+                        </span>
+                      {/if}
+                    </Table.Cell>
+
                     <!-- Name / inline edit -->
                     <Table.Cell class="font-medium">
                       {#if editingId === category.id}
                         <form
+                          id="update-form-{category.id}"
                           action="?/update"
                           method="POST"
                           use:enhance={() => {
@@ -163,20 +213,39 @@
               return async ({ update }) => {
                 await update();
                 isLoading = false;
+                newCategories = []; // Clear badge list on success
               };
             }}
             class="flex flex-col gap-4"
           >
             <div class="flex flex-col gap-1.5">
-              <Label for="name" class="text-xs font-medium text-muted-foreground">Category name</Label>
-              <Input id="name" name="name" placeholder="e.g. Tutorial" required autocomplete="off" class="h-9 text-sm" />
+              <Label class="text-xs font-medium text-muted-foreground">Category Name(s)</Label>
+              <div class="flex flex-wrap gap-2 p-2 rounded-md border bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 ring-offset-background transition-shadow">
+                {#each newCategories as category}
+                  <span class={badgeVariants({ variant: "secondary" })}>
+                    {category}
+                    <button type="button" class="ml-1 rounded-full hover:bg-muted p-0.5 outline-none" onclick={() => removeNewCategory(category)}>
+                      <X size={10} />
+                    </button>
+                  </span>
+                {/each}
+                <input type="text" bind:value={bulkInput} onkeydown={handleKeydown} onpaste={handlePaste} placeholder={newCategories.length === 0 ? "e.g. Svelte, Go, UI/UX" : ""} class="flex-1 min-w-[120px] bg-transparent border-none outline-none text-sm placeholder:text-muted-foreground" />
+              </div>
+              <input type="hidden" name="names" value={newCategories.join(",")} />
+              <input type="hidden" name="singleName" value={bulkInput} />
+              <p class="text-[10px] text-muted-foreground italic mt-1">Type and press Space, Enter or comma to add multiple at once.</p>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <Label for="order" class="text-xs font-medium text-muted-foreground">Order (higher = first)</Label>
+              <Input id="order" name="order" type="number" value={0} required class="h-9 text-sm" />
             </div>
 
             {#if form?.message}
               <p class="text-xs font-medium text-destructive">{form.message}</p>
             {/if}
 
-            <Button type="submit" class="w-full shadow-sm" disabled={isLoading}>
+            <Button type="submit" class="w-full shadow-sm" disabled={isLoading || (newCategories.length === 0 && !bulkInput)}>
               {#if isLoading}
                 <Loader2 class="mr-2 h-4 w-4 animate-spin" />
                 Processing...
