@@ -15,6 +15,7 @@
   import { onNavigate } from "$app/navigation";
   import { motion } from "@humanspeak/svelte-motion";
   import { fade } from "svelte/transition";
+  import { getFileUrl } from "$lib/storage.client";
 
   let { user = null } = $props();
 
@@ -43,7 +44,7 @@
 <div class="md:hidden flex items-center justify-between w-full bg-card border border-muted/50 p-4 rounded-xl shadow-sm">
   <div class="flex items-center gap-3">
     <Avatar class="size-10 ring-2 ring-muted/20">
-      <AvatarImage src={user?.image || profile} alt={user?.name || "Akhmad Fauzan"} />
+      <AvatarImage src={getFileUrl(user?.image) || profile} alt={user?.name || "Akhmad Fauzan"} />
       <AvatarFallback>AF</AvatarFallback>
     </Avatar>
     <div>
@@ -84,7 +85,7 @@
       <div class="flex flex-col items-center text-center mb-8">
         <div class="relative mb-5">
           <Avatar class="size-24 ring-4 ring-muted/20">
-            <AvatarImage src={user?.image || profile} alt={user?.name || "Akhmad Fauzan"} />
+            <AvatarImage src={getFileUrl(user?.image) || profile} alt={user?.name || "Akhmad Fauzan"} />
             <AvatarFallback>AF</AvatarFallback>
           </Avatar>
           <div class="absolute bottom-1 right-1 size-5 bg-background rounded-full flex items-center justify-center border-2 border-background shadow-sm">
