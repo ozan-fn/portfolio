@@ -1,1 +1,0 @@
-function e(e){return e?e.startsWith(`http`)?e:`https://zan68.t3.tigrisfiles.io/${e.startsWith(`/`)?e.substring(1):e}`:``}export{e as t};
