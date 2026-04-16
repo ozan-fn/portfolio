@@ -4,17 +4,25 @@
   import ToolHeader from "$lib/components/portfolio/tools/tool-header.svelte";
   import ToolPlaceholder from "$lib/components/portfolio/tools/tool-placeholder.svelte";
   import UrlShortener from "$lib/components/portfolio/tools/url-shortener.svelte";
+  import TextShare from "$lib/components/portfolio/tools/text-share.svelte";
   import { enhance } from "$app/forms";
   import { toast } from "svelte-sonner";
 
   let { data, form } = $props();
   let longUrl = $state("");
   let customAlias = $state("");
+  let textContent = $state("");
   let isSubmitting = $state(false);
   let lastGeneratedAlias = $state("");
 
+  $effect.pre(() => {
+    if (data.textShare && !textContent) {
+      textContent = data.textShare;
+    }
+  });
+
   $effect(() => {
-    if (form?.success) {
+    if (form?.success && form?.newLink) {
       const shortUrl = `${window.location.origin}/${form.newLink.alias}`;
       lastGeneratedAlias = form.newLink.alias;
 
@@ -66,7 +74,23 @@
     </div>
 
     <Tabs.Content value="text-share" class="mt-0 focus-visible:outline-none">
-      <ToolPlaceholder title="Text Share" description="Berbagi potongan teks atau catatan singkat dengan mudah." />
+      <form
+        id="text-share-form"
+        method="POST"
+        action="?/share"
+        use:enhance={() => {
+          isSubmitting = true;
+          return async ({ result, update }) => {
+            isSubmitting = false;
+            if (result.type === "success") {
+              // Optionally show a silent success indicator or toast
+            }
+            await update({ reset: false });
+          };
+        }}
+      >
+        <TextShare bind:content={textContent} {isSubmitting} views={data.views} latency={data.latency} />
+      </form>
     </Tabs.Content>
 
     <Tabs.Content value="url-shortener" class="mt-0 focus-visible:outline-none">

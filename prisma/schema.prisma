@@ -157,3 +157,12 @@ model ShortLink {
 
     @@map("short_links")
 }
+
+model TextShare {
+    id        String   @id @default("singleton")
+    content   String   @db.Text
+    views     Int      @default(0)
+    updatedAt DateTime @updatedAt
+
+    @@map("text_shares")
+}
