@@ -4,14 +4,23 @@
   import ToolHeader from "$lib/components/portfolio/tools/tool-header.svelte";
   import ToolPlaceholder from "$lib/components/portfolio/tools/tool-placeholder.svelte";
   import UrlShortener from "$lib/components/portfolio/tools/url-shortener.svelte";
+  import { enhance } from "$app/forms";
+  import { toast } from "svelte-sonner";
 
+  let { data, form } = $props();
   let longUrl = $state("");
   let customAlias = $state("");
+  let isSubmitting = $state(false);
 
-  const handleShorten = () => {
-    console.log("Shortening:", longUrl, customAlias);
-    // Logic later
-  };
+  $effect(() => {
+    if (form?.success) {
+      toast.success("Link berhasil diperpendek!");
+      longUrl = "";
+      customAlias = "";
+    } else if (form?.message) {
+      toast.error(form.message);
+    }
+  });
 </script>
 
 <svelte:head>
@@ -29,7 +38,7 @@
     {/snippet}
   </ToolHeader>
 
-  <Tabs.Root value="text-share" class="w-full">
+  <Tabs.Root value="url-shortener" class="w-full">
     <div class="flex items-center justify-between mb-4 px-0.5">
       <Tabs.List style="max-width: 400px" class="grid grid-cols-2 w-full h-11 bg-muted/50 p-1 rounded-xl">
         <Tabs.Trigger value="text-share" class="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all text-xs font-bold uppercase tracking-wider">
@@ -48,7 +57,19 @@
     </Tabs.Content>
 
     <Tabs.Content value="url-shortener" class="mt-0 focus-visible:outline-none">
-      <UrlShortener bind:longUrl bind:customAlias onShorten={handleShorten} />
+      <form
+        method="POST"
+        action="?/shorten"
+        use:enhance={() => {
+          isSubmitting = true;
+          return async ({ update }) => {
+            isSubmitting = false;
+            await update();
+          };
+        }}
+      >
+        <UrlShortener bind:longUrl bind:customAlias {isSubmitting} recentLinks={data.shortLinks} />
+      </form>
     </Tabs.Content>
   </Tabs.Root>
 </div>
