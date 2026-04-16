@@ -112,47 +112,49 @@
       <span class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">send a message</span>
     </div>
 
-    <Card.Root class="rounded-2xl border border-border bg-card p-6 md:p-10">
-      <form onsubmit={handleSubmit} class="flex flex-col gap-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="space-y-2">
-            <label for="name" class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground ml-1">Name</label>
-            <div class="relative">
-              <User class="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input id="name" required placeholder="John Doe" class="pl-10 h-12 bg-muted/30 border-border rounded-xl focus-visible:ring-primary text-sm transition-all" />
+    <form onsubmit={handleSubmit}>
+      <Card.Root class="rounded-2xl border border-border bg-card p-6 md:p-10">
+        <div class="flex flex-col gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex flex-col gap-2">
+              <label for="name" class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground ml-1">Name</label>
+              <div class="relative">
+                <User class="absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <Input id="name" required placeholder="John Doe" class="pl-10 h-10 bg-muted/30 border-border rounded-xl focus-visible:ring-primary text-xs transition-all" />
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label for="email" class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground ml-1">Email</label>
+              <div class="relative">
+                <AtSign class="absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <Input id="email" type="email" required placeholder="john@example.com" class="pl-10 h-10 bg-muted/30 border-border rounded-xl focus-visible:ring-primary text-xs transition-all" />
+              </div>
             </div>
           </div>
 
-          <div class="space-y-2">
-            <label for="email" class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground ml-1">Email</label>
-            <div class="relative">
-              <AtSign class="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input id="email" type="email" required placeholder="john@example.com" class="pl-10 h-12 bg-muted/30 border-border rounded-xl focus-visible:ring-primary text-sm transition-all" />
-            </div>
+          <div class="flex flex-col gap-2">
+            <label for="message" class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground ml-1">Message</label>
+            <textarea id="message" required placeholder="Halo Ozan, saya mau diskusi soal..." class="min-h-[140px] w-full rounded-xl border border-border bg-muted/30 px-4 py-3 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all resize-y"></textarea>
+          </div>
+
+          <div class="pt-2">
+            <Button type="submit" size="sm" disabled={isSubmitting} class="w-full md:w-auto md:px-12 h-10 rounded-xl text-[10px] font-bold tracking-widest uppercase group transition-all relative overflow-hidden">
+              {#if isSubmitting}
+                <span class="flex items-center gap-2">
+                  <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                  Mengirim...
+                </span>
+              {:else}
+                <span class="relative z-10 flex items-center justify-center gap-2">
+                  Kirim Pesan
+                  <Send size={14} class="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                </span>
+              {/if}
+            </Button>
           </div>
         </div>
-
-        <div class="space-y-2">
-          <label for="message" class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground ml-1">Message</label>
-          <textarea id="message" required placeholder="Halo Ozan, saya mau diskusi soal..." class="min-h-[180px] w-full rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all resize-y"></textarea>
-        </div>
-
-        <div class="pt-2">
-          <Button type="submit" disabled={isSubmitting} class="w-full md:w-auto md:px-12 h-12 rounded-xl text-[10px] font-bold tracking-widest uppercase group transition-all relative overflow-hidden">
-            {#if isSubmitting}
-              <span class="flex items-center gap-2">
-                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                Mengirim...
-              </span>
-            {:else}
-              <span class="relative z-10 flex items-center justify-center gap-2">
-                Kirim Pesan
-                <Send size={14} class="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-              </span>
-            {/if}
-          </Button>
-        </div>
-      </form>
-    </Card.Root>
+      </Card.Root>
+    </form>
   </div>
 </div>
