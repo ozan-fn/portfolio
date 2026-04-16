@@ -52,10 +52,12 @@ export const actions: Actions = {
     }
 
     try {
-      await prisma.textShare.upsert({
-        where: { id: "singleton" },
-        update: { content },
-        create: { id: "singleton", content },
+      const result = await prisma.$transaction(async (tx) => {
+        return await tx.textShare.upsert({
+          where: { id: "singleton" },
+          update: { content },
+          create: { id: "singleton", content },
+        });
       });
       return { success: true };
     } catch (error) {
