@@ -39,22 +39,22 @@
 </svelte:head>
 
 <div class="flex flex-col gap-6 pb-10">
-  <div class="bg-primary/5 p-10 rounded-2xl border border-primary/10 relative overflow-hidden shadow-inner">
+  <div class="bg-primary/5 p-6 rounded-3xl border border-primary/10 relative overflow-hidden shadow-sm">
     <div class="absolute -right-10 -top-10 size-40 bg-primary/5 blur-3xl rounded-full"></div>
 
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 relative z-10">
-      <div class="space-y-3">
+      <div class="space-y-2">
         <div class="flex items-center gap-2">
-          <PenTool size={16} class="text-primary" />
-          <span class="text-[10px] font-bold tracking-widest uppercase text-primary">Articles</span>
+          <PenTool size={14} class="text-primary" />
+          <span class="text-[9px] font-bold tracking-widest uppercase text-primary">Articles</span>
         </div>
-        <h3 class="text-4xl font-black tracking-tight text-primary leading-tight">Writing ✍️</h3>
-        <p class="text-muted-foreground text-xl leading-relaxed max-w-2xl">Berbagi pemikiran seputar teknologi, koding, dan pengembangan diri.</p>
+        <h3 class="text-2xl font-bold tracking-tight text-primary leading-tight">Writing ✍️</h3>
+        <p class="text-muted-foreground text-base leading-relaxed max-w-2xl">Berbagi pemikiran seputar teknologi, koding, dan pengembangan diri.</p>
       </div>
 
-      <div class="relative w-full md:w-80">
-        <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input placeholder="Cari artikel..." class="pl-10 h-11 bg-background/50 border-border rounded-xl focus-visible:ring-primary backdrop-blur-sm text-sm" bind:value={searchQuery} />
+      <div class="relative w-full md:w-72">
+        <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+        <Input placeholder="Cari artikel..." class="pl-10 h-10 bg-background/50 border-border rounded-xl focus-visible:ring-primary backdrop-blur-sm text-xs" bind:value={searchQuery} />
       </div>
     </div>
   </div>

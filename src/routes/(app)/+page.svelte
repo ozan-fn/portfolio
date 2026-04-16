@@ -72,10 +72,10 @@
   <meta name="description" content="Main dashboard overview of my portfolio and activities." />
 </svelte:head>
 
-<div class="bg-primary/5 p-10 rounded-2xl border border-primary/10 relative overflow-hidden shadow-inner">
+<div class="bg-primary/5 p-6 rounded-3xl border border-primary/10 relative overflow-hidden shadow-sm">
   <div class="absolute -right-10 -top-10 size-40 bg-primary/5 blur-3xl rounded-full"></div>
-  <h3 class="text-4xl font-black mb-4 tracking-tight text-primary leading-tight">Hello, I'm Ozan! 👋</h3>
-  <p class="text-muted-foreground text-xl leading-relaxed max-w-2xl">
+  <h3 class="text-2xl font-bold mb-2 tracking-tight text-primary leading-tight">Hello, I'm Ozan! 👋</h3>
+  <p class="text-muted-foreground text-base leading-relaxed max-w-2xl">
     Developer asal Purbalingga yang fokus membangun solusi modern dengan
     <strong>Golang</strong>, <strong>Rust</strong>, dan <strong>Svelte</strong>.
   </p>
@@ -105,22 +105,49 @@
     </div>
   {:else}
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-      <div class="rounded-xl border border-border bg-muted/40 p-4 flex flex-col gap-1">
-        <span class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">today</span>
-        <span class="font-mono text-xl font-bold text-foreground">{fmtSec($animatedToday)}</span>
+      <div class="h-16 rounded-2xl border border-border bg-muted/40 px-4 flex items-center gap-3 transition-all hover:bg-muted/60">
+        <div class="size-8 rounded-full bg-blue-500/10 flex items-center justify-center">
+          <svg class="size-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+          </svg>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[9px] font-bold tracking-widest uppercase text-muted-foreground/70">today</span>
+          <span class="text-xs font-bold text-foreground">{fmtSec($animatedToday)}</span>
+        </div>
       </div>
-      <div class="rounded-xl border border-border bg-muted/40 p-4 flex flex-col gap-1">
-        <span class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">daily avg · 7d</span>
-        <span class="font-mono text-xl font-bold text-foreground">{fmtSec($animatedAvg)}</span>
+      <div class="h-16 rounded-2xl border border-border bg-muted/40 px-4 flex items-center gap-3 transition-all hover:bg-muted/60">
+        <div class="size-8 rounded-full bg-primary/10 flex items-center justify-center">
+          <svg class="size-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+          </svg>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[9px] font-bold tracking-widest uppercase text-muted-foreground/70">daily avg</span>
+          <span class="text-xs font-bold text-foreground">{fmtSec($animatedAvg)}</span>
+        </div>
       </div>
-      <div class="rounded-xl border border-border bg-muted/40 p-4 flex flex-col gap-1">
-        <span class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">all time</span>
-        <span class="font-mono text-xl font-bold text-foreground">{fmtSec($animatedAllTime)}</span>
+      <div class="h-16 rounded-2xl border border-border bg-muted/40 px-4 flex items-center gap-3 transition-all hover:bg-muted/60">
+        <div class="size-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+          <svg class="size-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-[9px] font-bold tracking-widest uppercase text-muted-foreground/70">all time</span>
+          <span class="text-xs font-bold text-foreground">{fmtSec($animatedAllTime)}</span>
+        </div>
       </div>
-      <div class="rounded-xl border border-border bg-muted/40 p-4 flex flex-col gap-1">
-        <span class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">best day</span>
-        <span class="font-mono text-lg font-bold text-foreground leading-tight">{fmtSec($animatedBestDay)}</span>
-        <span class="font-mono text-[10px] text-muted-foreground">{wakaStats?.data?.best_day?.date ?? ""}</span>
+      <div class="h-16 rounded-2xl border border-border bg-muted/40 px-4 flex items-center gap-3 transition-all hover:bg-muted/60">
+        <div class="size-8 rounded-full bg-amber-500/10 flex items-center justify-center">
+          <svg class="size-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+        </div>
+        <div class="flex flex-col overflow-hidden">
+          <span class="text-[9px] font-bold tracking-widest uppercase text-muted-foreground/70">best day</span>
+          <span class="text-xs font-bold text-foreground truncate">{fmtSec($animatedBestDay)}</span>
+        </div>
       </div>
     </div>
 

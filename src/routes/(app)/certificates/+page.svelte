@@ -23,17 +23,17 @@
 </svelte:head>
 
 <div class="flex flex-col gap-6">
-  <div class="bg-primary/5 p-10 rounded-2xl border border-primary/10 relative overflow-hidden shadow-inner">
+  <div class="bg-primary/5 p-6 rounded-3xl border border-primary/10 relative overflow-hidden shadow-sm">
     <div class="absolute -right-10 -top-10 size-40 bg-primary/5 blur-3xl rounded-full"></div>
-    <div class="flex items-center gap-2 mb-3">
-      <Award size={16} class="text-primary" />
-      <span class="text-[10px] font-bold tracking-widest uppercase text-primary">Recognition</span>
+    <div class="flex items-center gap-2 mb-2">
+      <Award size={14} class="text-primary" />
+      <span class="text-[9px] font-bold tracking-widest uppercase text-primary">Recognition</span>
     </div>
-    <h3 class="text-4xl font-black mb-4 tracking-tight text-primary leading-tight">Certificates 🏆</h3>
-    <p class="text-muted-foreground text-xl leading-relaxed max-w-2xl">
+    <h3 class="text-2xl font-bold mb-2 tracking-tight text-primary leading-tight">Certificates 🏆</h3>
+    <p class="text-muted-foreground text-base leading-relaxed max-w-2xl">
       Koleksi sertifikasi dan pencapaian dalam perjalanan belajar koding.
       <br />
-      <span class="text-sm italic text-primary/80 mt-2 block">"Belajar terus, sertifikat mah bonus yang penting ilmunya."</span>
+      <span class="text-xs italic text-primary/80 mt-1 block">"Belajar terus, sertifikat mah bonus yang penting ilmunya."</span>
     </p>
   </div>
 

@@ -63,16 +63,16 @@
 </svelte:head>
 
 <div class="flex flex-col gap-8 pb-10">
-  <div class="bg-primary/5 p-10 rounded-2xl border border-primary/10 relative overflow-hidden shadow-inner">
+  <div class="bg-primary/5 p-6 rounded-3xl border border-primary/10 relative overflow-hidden shadow-sm">
     <div class="absolute -right-10 -top-10 size-40 bg-primary/5 blur-3xl rounded-full"></div>
 
-    <div class="relative z-10 space-y-3 text-center md:text-left">
+    <div class="relative z-10 space-y-2 text-center md:text-left">
       <div class="flex items-center justify-center md:justify-start gap-2">
-        <MessageSquare size={16} class="text-primary" />
-        <span class="text-[10px] font-bold tracking-widest uppercase text-primary">Get In Touch</span>
+        <MessageSquare size={14} class="text-primary" />
+        <span class="text-[9px] font-bold tracking-widest uppercase text-primary">Get In Touch</span>
       </div>
-      <h3 class="text-4xl font-black tracking-tight text-primary leading-tight">Contact 📬</h3>
-      <p class="text-muted-foreground text-xl leading-relaxed max-w-2xl mx-auto md:mx-0">
+      <h3 class="text-2xl font-bold tracking-tight text-primary leading-tight">Contact 📬</h3>
+      <p class="text-muted-foreground text-base leading-relaxed max-w-2xl mx-auto md:mx-0">
         Punya ide proyek menarik atau sekadar ingin diskusi soal <strong class="text-foreground">Golang</strong>, <strong class="text-foreground">Rust</strong>, dan <strong class="text-foreground">Svelte</strong>?
       </p>
     </div>
@@ -81,23 +81,23 @@
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
     {#each contactInfo as info}
       {#if info.href}
-        <a href={info.href} target="_blank" rel="noopener noreferrer" class="group rounded-2xl border border-border bg-card p-6 flex flex-col items-center justify-center gap-4 transition-all hover:-translate-y-1 hover:shadow-lg text-center">
-          <div class="size-14 rounded-full flex items-center justify-center {info.bg} {info.color} transition-transform duration-500 group-hover:scale-110">
-            <info.icon size={24} strokeWidth={1.5} />
+        <a href={info.href} target="_blank" rel="noopener noreferrer" class="h-16 rounded-2xl border border-border bg-card px-4 flex items-center gap-3 transition-all hover:bg-muted/50 hover:shadow-sm">
+          <div class="size-10 rounded-full flex items-center justify-center {info.bg} {info.color} shrink-0">
+            <info.icon size={18} strokeWidth={2} />
           </div>
-          <div class="flex flex-col gap-1.5">
-            <span class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">{info.label}</span>
-            <span class="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{info.value}</span>
+          <div class="flex flex-col overflow-hidden text-left">
+            <span class="text-[9px] font-bold tracking-widest uppercase text-muted-foreground/70 leading-none mb-1">{info.label}</span>
+            <span class="text-xs font-bold text-foreground truncate">{info.value}</span>
           </div>
         </a>
       {:else}
-        <div class="group rounded-2xl border border-border bg-card p-6 flex flex-col items-center justify-center gap-4 transition-all hover:-translate-y-1 hover:shadow-lg text-center">
-          <div class="size-14 rounded-full flex items-center justify-center {info.bg} {info.color} transition-transform duration-500 group-hover:scale-110">
-            <info.icon size={24} strokeWidth={1.5} />
+        <div class="h-16 rounded-2xl border border-border bg-card px-4 flex items-center gap-3">
+          <div class="size-10 rounded-full flex items-center justify-center {info.bg} {info.color} shrink-0">
+            <info.icon size={18} strokeWidth={2} />
           </div>
-          <div class="flex flex-col gap-1.5">
-            <span class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">{info.label}</span>
-            <span class="text-sm font-semibold text-foreground">{info.value}</span>
+          <div class="flex flex-col overflow-hidden text-left">
+            <span class="text-[9px] font-bold tracking-widest uppercase text-muted-foreground/70 leading-none mb-1">{info.label}</span>
+            <span class="text-xs font-bold text-foreground truncate">{info.value}</span>
           </div>
         </div>
       {/if}
