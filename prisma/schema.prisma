@@ -147,3 +147,13 @@ model BlogPost {
     @@index([categoryId])
     @@map("blog_posts")
 }
+
+model ShortLink {
+    id        String   @id @default(uuid())
+    url       String   @db.Text
+    alias     String   @unique @db.VarChar(50)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("short_links")
+}
