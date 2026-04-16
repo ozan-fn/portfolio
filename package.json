@@ -48,6 +48,8 @@
     "@prisma/client": "^7.6.0",
     "better-auth": "^1.5.6",
     "mode-watcher": "^1.1.0",
-    "mqtt": "^5.15.1"
+    "monaco-editor": "^0.55.1",
+    "mqtt": "^5.15.1",
+    "svelte-monaco": "^1.0.4"
   }
 }

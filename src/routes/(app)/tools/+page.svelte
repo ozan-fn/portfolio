@@ -14,10 +14,12 @@
   let textContent = $state("");
   let isSubmitting = $state(false);
   let lastGeneratedAlias = $state("");
+  let isInitialized = $state(false);
 
   $effect.pre(() => {
-    if (data.textShare && !textContent) {
+    if (!isInitialized && data.textShare) {
       textContent = data.textShare;
+      isInitialized = true;
     }
   });
 
@@ -59,7 +61,7 @@
     {/snippet}
   </ToolHeader>
 
-  <Tabs.Root value="url-shortener" class="w-full">
+  <Tabs.Root value="text-share" class="w-full">
     <div class="flex items-center justify-between mb-4 px-0.5">
       <Tabs.List style="max-width: 400px" class="grid grid-cols-2 w-full h-11 bg-muted/50 p-1 rounded-xl">
         <Tabs.Trigger value="text-share" class="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all text-xs font-bold uppercase tracking-wider">
@@ -82,14 +84,11 @@
           isSubmitting = true;
           return async ({ result, update }) => {
             isSubmitting = false;
-            if (result.type === "success") {
-              // Optionally show a silent success indicator or toast
-            }
             await update({ reset: false });
           };
         }}
       >
-        <TextShare bind:content={textContent} {isSubmitting} views={data.views} latency={data.latency} />
+        <TextShare bind:content={textContent} bind:isSubmitting views={data.views} latency={data.latency} />
       </form>
     </Tabs.Content>
 

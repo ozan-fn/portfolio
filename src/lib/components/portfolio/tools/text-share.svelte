@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { Hammer, Share2, Copy, Check, Trash2, Eye, Zap, Wifi, WifiOff } from "@lucide/svelte";
+  import { Hammer, Share2, Copy, Check, Trash2, Eye, Zap, Wifi, WifiOff, Code2 } from "@lucide/svelte";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
-  import { Textarea } from "$lib/components/ui/textarea";
   import { Label } from "$lib/components/ui/label";
   import { toast } from "svelte-sonner";
   import mqtt from "mqtt";
   import { onMount, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
 
   let {
     content = $bindable(""),
-    isSubmitting = false,
+    isSubmitting = $bindable(false),
     views = 0,
     latency = 0,
   } = $props<{
@@ -27,11 +27,45 @@
   let lastLocalContent = $state("");
   let deviceId = $state("");
 
-  onMount(() => {
+  let editorContainer: HTMLDivElement;
+  let editor: any; // Use any to avoid build-time type issues if monaco isn't fully loaded
+
+  onMount(async () => {
+    if (!browser) return;
+
+    // Dynamically import Monaco to avoid SSR issues with CSS/Browser APIs
+    const monaco = await import("monaco-editor");
+
     deviceId = Math.random().toString(16).slice(3);
     lastLocalContent = content;
     lastRemoteContent = content;
 
+    // Initialize Monaco
+    editor = monaco.editor.create(editorContainer, {
+      value: content,
+      language: "markdown",
+      theme: "vs-dark",
+      automaticLayout: true,
+      minimap: { enabled: false },
+      scrollBeyondLastLine: false,
+      fontSize: 13,
+      lineNumbers: "on",
+      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+      padding: { top: 16, bottom: 16 },
+      roundedSelection: true,
+      cursorSmoothCaretAnimation: "on",
+      smoothScrolling: true,
+    });
+
+    editor.onDidChangeModelContent(() => {
+      const newValue = editor.getValue();
+      if (newValue !== content) {
+        content = newValue;
+        handleInput();
+      }
+    });
+
+    // MQTT connection
     mqttClient = mqtt.connect("wss://broker.emqx.io:8084/mqtt", {
       clientId: `portfolio_share_${deviceId}`,
     });
@@ -41,20 +75,23 @@
       mqttClient?.subscribe("ozan/portfolio/text-share");
     });
 
-    mqttClient.on("disconnect", () => {
-      isConnected = false;
-    });
-
     mqttClient.on("message", (topic, message) => {
       try {
         const data = JSON.parse(message.toString());
-        // Hanya update jika bukan dari device ini
         if (data.deviceId !== deviceId) {
+          if (data.type === "saving") {
+            isSubmitting = data.state;
+            return;
+          }
+
           lastRemoteContent = data.content;
-          // Optimistic conflict handling: Jika user sedang tidak mengetik, update langsung
           if (content === lastLocalContent) {
             content = data.content;
             lastLocalContent = data.content;
+            // Update editor value without losing cursor position if possible
+            const selection = editor.getSelection();
+            editor.setValue(data.content);
+            if (selection) editor.setSelection(selection);
           }
         }
       } catch (e) {
@@ -65,6 +102,7 @@
 
   onDestroy(() => {
     mqttClient?.end();
+    editor?.dispose();
   });
 
   function handleInput() {
@@ -83,15 +121,43 @@
       );
     }
 
-    // Auto-save ke DB dengan debounce lebih lama agar tidak bentrok dengan MQTT
+    // Auto-save ke DB dengan interval 1 detik
     timeout = setTimeout(() => {
       const form = document.getElementById("text-share-form") as HTMLFormElement;
-      if (form) form.requestSubmit();
-    }, 2000);
+      if (form) {
+        // Broadcast saving state to ALL clients
+        if (isConnected) {
+          mqttClient?.publish(
+            "ozan/portfolio/text-share",
+            JSON.stringify({
+              type: "saving",
+              state: true,
+              deviceId,
+            }),
+          );
+        }
+        form.requestSubmit();
+      }
+    }, 1000);
   }
+
+  // Effect to clear saving indicator when submission finishes
+  $effect(() => {
+    if (!isSubmitting && isConnected) {
+      mqttClient?.publish(
+        "ozan/portfolio/text-share",
+        JSON.stringify({
+          type: "saving",
+          state: false,
+          deviceId,
+        }),
+      );
+    }
+  });
 
   function clearContent() {
     content = "";
+    editor?.setValue("");
     handleInput();
   }
 </script>
@@ -103,7 +169,7 @@
         <div class="grid gap-1">
           <Card.Title class="text-2xl font-bold tracking-tight">Text Share</Card.Title>
           <div class="flex items-center gap-4">
-            <Card.Description class="text-base">Tulis atau tempel teks besar. Realtime sync aktif.</Card.Description>
+            <Card.Description class="text-base">Editor gaya VS Code aktif. Perubahan realtime tersimpan.</Card.Description>
           </div>
         </div>
         <div class="flex flex-col items-end gap-2">
@@ -119,7 +185,7 @@
           </div>
           <div class="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-tight {isConnected ? 'text-emerald-500/80' : 'text-amber-500/80'}">
             {#if isConnected}
-              <Wifi class="size-2.5" /> Realtime Active
+              <Wifi class="size-2.5" /> Monaco Realtime Active
             {:else}
               <WifiOff class="size-2.5" /> Offline Sync
             {/if}
@@ -131,7 +197,9 @@
       <div class="grid gap-6">
         <div class="flex flex-col gap-2">
           <div class="flex items-center justify-between ml-1">
-            <Label for="content" class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">Your Text / Snippet</Label>
+            <Label for="content" class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground flex items-center gap-2">
+              <Code2 class="size-3" /> Shared Workspace
+            </Label>
             <div class="flex items-center gap-2">
               {#if isSubmitting}
                 <div class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground animate-pulse">
@@ -141,14 +209,18 @@
               {/if}
               {#if content}
                 <button type="button" onclick={clearContent} class="text-[10px] font-bold uppercase tracking-widest text-destructive hover:opacity-80 transition-opacity flex items-center gap-1">
-                  <Trash2 class="size-3" /> Clear
+                  <Trash2 class="size-3" /> Clear Editor
                 </button>
               {/if}
             </div>
           </div>
-          <Textarea id="content" name="content" placeholder="Paste your long text, code snippets, or notes here..." bind:value={content} oninput={handleInput} class="min-h-75 rounded-xl bg-muted/30 border-border text-sm focus-visible:ring-primary transition-all p-4 resize-y" />
+
+          <div class="relative overflow-hidden rounded-xl border border-border bg-[#1e1e1e] shadow-inner">
+            <div bind:this={editorContainer} class="h-75 w-full"></div>
+            <input type="hidden" name="content" value={content} />
+          </div>
         </div>
-      </div>
-    </Card.Content>
+      </div></Card.Content
+    >
   </Card.Root>
 </div>
