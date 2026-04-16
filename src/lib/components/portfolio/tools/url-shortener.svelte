@@ -6,25 +6,23 @@
   import { Label } from "$lib/components/ui/label";
   import { toast } from "svelte-sonner";
 
-  let { longUrl = $bindable(""), customAlias = $bindable(""), isSubmitting = false } = $props();
+  let {
+    longUrl = $bindable(""),
+    customAlias = $bindable(""),
+    isSubmitting = false,
+    lastGeneratedAlias = $bindable(""),
+  }: {
+    longUrl?: string;
+    customAlias?: string;
+    isSubmitting?: boolean;
+    lastGeneratedAlias?: string;
+  } = $props();
 
-  let copiedId = $state<string | null>(null);
   let domain = $state("");
 
   $effect(() => {
     domain = window.location.host + "/";
   });
-
-  const copyToClipboard = async (text: string, id: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      copiedId = id;
-      toast.success("Link disalin!");
-      setTimeout(() => (copiedId = null), 2000);
-    } catch (err) {
-      toast.error("Gagal menyalin link");
-    }
-  };
 </script>
 
 <div class="grid gap-6">
@@ -60,4 +58,39 @@
       </div>
     </Card.Content>
   </Card.Root>
+
+  {#if !isSubmitting && lastGeneratedAlias}
+    <div class="flex items-center gap-2 px-1 animate-in fade-in slide-in-from-top-2 duration-300">
+      <Check size={14} class="text-green-500" />
+      <span class="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">Generated Link</span>
+    </div>
+
+    <Card.Root class="border-border bg-card/50 hover:bg-card transition-colors rounded-2xl overflow-hidden group animate-in zoom-in-95 duration-300">
+      <div class="p-4 flex items-center justify-between gap-4">
+        <div class="flex flex-col gap-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-primary truncate">{domain}{lastGeneratedAlias}</span>
+          </div>
+          <span class="text-[10px] text-muted-foreground truncate italic">Ready to share!</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="icon"
+            class="size-8 rounded-lg"
+            onclick={() => {
+              const url = `https://${domain}${lastGeneratedAlias}`;
+              navigator.clipboard.writeText(url);
+              toast.success("Link disalin!");
+            }}
+          >
+            <Copy class="size-3.5" />
+          </Button>
+          <a href={`https://${domain}${lastGeneratedAlias}`} target="_blank" class="size-8 flex items-center justify-center rounded-lg bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all">
+            <ExternalLink class="size-3.5" />
+          </a>
+        </div>
+      </div>
+    </Card.Root>
+  {/if}
 </div>

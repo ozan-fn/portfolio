@@ -4,7 +4,7 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Badge } from "$lib/components/ui/badge/index.js";
-  import { Plus, Pencil, Trash2, Eye, FileText, Globe, Lock, Search, ArrowUpDown, Tag } from "@lucide/svelte";
+  import { Plus, Pencil, Trash2, Eye, FileText, Globe, Lock, Search, ArrowUpDown, Tag, Loader2 } from "@lucide/svelte";
   import { formatDate, calculateReadTime, generateExcerpt } from "$lib/utils";
   import { enhance } from "$app/forms";
   import DashboardPage from "$lib/components/admin/dashboard-page.svelte";

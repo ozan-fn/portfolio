@@ -26,7 +26,13 @@ export const actions: Actions = {
 
     try {
       // Basic URL validation
-      new URL(url);
+      const urlObj = new URL(url);
+      const requestUrl = new URL(request.url);
+
+      // Prevent shortening links from the same domain
+      if (urlObj.hostname === requestUrl.hostname) {
+        return fail(400, { message: "URL sudah merupakan link dari domain ini" });
+      }
     } catch (e) {
       return fail(400, { message: "Invalid URL format" });
     }

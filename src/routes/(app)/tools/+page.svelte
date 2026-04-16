@@ -11,10 +11,23 @@
   let longUrl = $state("");
   let customAlias = $state("");
   let isSubmitting = $state(false);
+  let lastGeneratedAlias = $state("");
 
   $effect(() => {
     if (form?.success) {
-      toast.success("Link berhasil diperpendek!");
+      const shortUrl = `${window.location.origin}/${form.newLink.alias}`;
+      lastGeneratedAlias = form.newLink.alias;
+
+      toast.success("Link berhasil diperpendek!", {
+        description: shortUrl,
+        action: {
+          label: "Copy",
+          onClick: () => {
+            navigator.clipboard.writeText(shortUrl);
+            toast.success("Link disalin!");
+          },
+        },
+      });
       longUrl = "";
       customAlias = "";
     } else if (form?.message) {
@@ -68,7 +81,7 @@
           };
         }}
       >
-        <UrlShortener bind:longUrl bind:customAlias {isSubmitting} recentLinks={data.shortLinks} />
+        <UrlShortener bind:longUrl bind:customAlias {isSubmitting} bind:lastGeneratedAlias />
       </form>
     </Tabs.Content>
   </Tabs.Root>
