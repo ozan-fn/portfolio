@@ -39,7 +39,9 @@
     "typescript": "^5.9.3",
     "vite": "^8.0.8",
     "vite-plugin-lucide-preprocess": "^1.4.8",
+    "vite-plugin-monaco-editor": "^1.1.0",
     "y-monaco": "^0.1.6",
+    "y-protocols": "^1.0.7",
     "yjs": "^13.6.30"
   },
   "dependencies": {
@@ -52,7 +54,6 @@
     "better-auth": "^1.5.6",
     "mode-watcher": "^1.1.0",
     "mqtt": "^5.15.1",
-    "svelte-monaco": "^1.0.4",
-    "y-protocols": "^1.0.7"
+    "svelte-monaco": "^1.0.4"
   }
 }
