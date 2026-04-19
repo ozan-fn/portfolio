@@ -88,7 +88,7 @@
           };
         }}
       >
-        <TextShare bind:content={textContent} bind:isSubmitting views={data.views} latency={data.latency} />
+        <TextShare bind:content={textContent} bind:isSubmitting />
       </form>
     </Tabs.Content>
 
