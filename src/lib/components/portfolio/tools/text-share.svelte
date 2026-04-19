@@ -21,7 +21,6 @@
 
   // Fungsi terpisah untuk koneksi MQTT agar bisa dipanggil ulang
   function connectMqtt() {
-    // Menggunakan broker public MQTT over WebSocket (bisa diganti dengan brokernya sendiri)
     client = mqtt.connect("wss://broker.emqx.io:8084/mqtt");
 
     client.on("connect", () => {
@@ -29,16 +28,18 @@
       client.subscribe(awarenessTopic);
     });
 
-    // 3. Terima pesan dari MQTT -> Terapkan ke Yjs / Awareness
     client.on("message", (topic, message) => {
-      // Ubah buffer MQTT menjadi Uint8Array yang bisa dibaca Yjs
-      const uint8Msg = new Uint8Array(message);
+      // Pastikan pesan aman dibaca sebagai binary oleh Yjs
+      const uint8Msg = new Uint8Array(message as any);
 
       if (topic === updateTopic) {
-        // Apply update dari remote, set 'origin' ke client agar tidak terjadi infinite loop
-        Y.applyUpdate(ydoc, uint8Msg, client);
+        try {
+          Y.applyUpdate(ydoc, uint8Msg, client);
+        } catch (e) {} // Abaikan pesan nyasar atau format salah
       } else if (topic === awarenessTopic) {
-        awarenessProtocol.applyAwarenessUpdate(awareness, uint8Msg, client);
+        try {
+          awarenessProtocol.applyAwarenessUpdate(awareness, uint8Msg, client);
+        } catch (e) {}
       }
     });
   }
@@ -48,7 +49,6 @@
     const { MonacoBinding } = await import("y-monaco");
 
     ydoc = new Y.Doc();
-    // Inisialisasi manual awareness protocol
     awareness = new awarenessProtocol.Awareness(ydoc);
 
     connectMqtt();
@@ -62,16 +62,24 @@
 
     // 2. Tangkap pergerakan kursor lokal -> Kirim ke MQTT
     (awareness as any).on("update", ({ added, updated, removed }: { added: number[]; updated: number[]; removed: number[] }, origin: any) => {
+      // Kirim update kursor ke orang lain
       if (origin !== client) {
         const changedClients = added.concat(updated).concat(removed);
         const enc = awarenessProtocol.encodeAwarenessUpdate(awareness, changedClients);
         client.publish(awarenessTopic, enc as any);
       }
+
+      // KUNCI SINKRONISASI MANUALNYA DI SINI:
+      // Jika kita mendeteksi ada user baru masuk (via MQTT),
+      // otomatis kirim seluruh isi text editor kita saat ini ke orang tersebut!
+      if (added.length > 0 && origin === client) {
+        const fullState = Y.encodeStateAsUpdate(ydoc);
+        client.publish(updateTopic, fullState as any);
+      }
     });
 
     const ytext = ydoc.getText("monaco");
 
-    // Masukkan custom awareness ke dalam MonacoBinding
     binding = new MonacoBinding(ytext, editor.getModel(), new Set([editor]), awareness);
   }
 
