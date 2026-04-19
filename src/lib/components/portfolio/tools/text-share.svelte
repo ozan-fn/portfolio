@@ -7,6 +7,12 @@
 
   import type { MonacoBinding as MonacoBindingType } from "y-monaco";
 
+  // Props untuk initial content dari database
+  interface Props {
+    content?: string;
+  }
+  let { content = "" }: Props = $props();
+
   // State untuk melacak status koneksi websocket (via MQTT)
   let isConnected = $state(true);
 
@@ -14,12 +20,33 @@
   let binding: MonacoBindingType;
   let awareness: awarenessProtocol.Awareness;
   let ydoc: Y.Doc;
+  let saveTimer: ReturnType<typeof setTimeout>;
+  let syncHealingTimer: ReturnType<typeof setTimeout> | undefined;
 
   const roomname = `tes-portfolio-sinkron-123`;
   const updateTopic = `portfolio/monaco/${roomname}/update`;
   const awarenessTopic = `portfolio/monaco/${roomname}/awareness`;
   // TAMBAHAN: Topic khusus untuk Yjs Sync Protocol (meminta history data)
   const syncReqTopic = `portfolio/monaco/${roomname}/sync-req`;
+
+  // Fungsi untuk save content ke database
+  async function saveContent() {
+    try {
+      const formData = new FormData();
+      formData.append("content", ydoc.getText("monaco").toString());
+
+      const response = await fetch("/tools?/share", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        console.error("Failed to save content");
+      }
+    } catch (error) {
+      console.error("Save error:", error);
+    }
+  }
 
   // Fungsi terpisah untuk koneksi MQTT agar bisa dipanggil ulang
   function connectMqtt() {
@@ -89,6 +116,10 @@
           client.publish(updateTopic, fullState as any);
         }, 500);
       }
+
+      // Auto-save ke database setiap 2 detik setelah berhenti ngetik
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveContent, 2000);
     });
 
     // 2. Tangkap pergerakan kursor lokal -> Kirim ke MQTT
@@ -104,10 +135,21 @@
 
     const ytext = ydoc.getText("monaco");
 
+    // Load initial content dari database
+    if (content) {
+      ytext.insert(0, content);
+    }
+
     binding = new MonacoBinding(ytext, editor.getModel(), new Set([editor]), awareness);
   }
 
   onDestroy(() => {
+    if (saveTimer) clearTimeout(saveTimer);
+    if (syncHealingTimer) clearTimeout(syncHealingTimer);
+    // Save immediately before destroy
+    if (ydoc) {
+      saveContent();
+    }
     if (binding) binding.destroy();
     if (client) client.end();
   });
