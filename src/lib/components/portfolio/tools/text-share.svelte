@@ -18,6 +18,8 @@
   const roomname = `tes-portfolio-sinkron-123`;
   const updateTopic = `portfolio/monaco/${roomname}/update`;
   const awarenessTopic = `portfolio/monaco/${roomname}/awareness`;
+  // TAMBAHAN: Topic khusus untuk Yjs Sync Protocol (meminta history data)
+  const syncReqTopic = `portfolio/monaco/${roomname}/sync-req`;
 
   // Fungsi terpisah untuk koneksi MQTT agar bisa dipanggil ulang
   function connectMqtt() {
@@ -26,19 +28,35 @@
     client.on("connect", () => {
       client.subscribe(updateTopic);
       client.subscribe(awarenessTopic);
+      client.subscribe(syncReqTopic);
+
+      // FITUR Y-WEBSOCKET: Sync Step 1
+      // Begitu konek, broadcast "State Vector" kita (kondisi dokumen saat ini)
+      // ke user lain untuk meminta data yang kita lewatkan.
+      const stateVector = Y.encodeStateVector(ydoc);
+      client.publish(syncReqTopic, stateVector as any);
     });
 
     client.on("message", (topic, message) => {
-      // Pastikan pesan aman dibaca sebagai binary oleh Yjs
       const uint8Msg = new Uint8Array(message as any);
 
       if (topic === updateTopic) {
         try {
           Y.applyUpdate(ydoc, uint8Msg, client);
-        } catch (e) {} // Abaikan pesan nyasar atau format salah
+        } catch (e) {}
       } else if (topic === awarenessTopic) {
         try {
           awarenessProtocol.applyAwarenessUpdate(awareness, uint8Msg, client);
+        } catch (e) {}
+      } else if (topic === syncReqTopic) {
+        // FITUR Y-WEBSOCKET: Sync Step 2
+        // Ada user baru meminta data! Kita bandingkan State Vector dia dengan dokumen kita.
+        try {
+          const missingUpdate = Y.encodeStateAsUpdate(ydoc, uint8Msg);
+          // Jika kita punya data yang tidak dia miliki (ukuran byte > 2), kirimkan ke dia!
+          if (missingUpdate.length > 2) {
+            client.publish(updateTopic, missingUpdate as any);
+          }
         } catch (e) {}
       }
     });
@@ -53,29 +71,35 @@
 
     connectMqtt();
 
+    // Timer untuk fitur Auto-Heal (mencegah teks bolong saat ngetik brutal)
+    let syncHealingTimer: ReturnType<typeof setTimeout>;
+
     // 1. Tangkap perubahan teks lokal -> Kirim ke MQTT
     (ydoc as any).on("update", (update: Uint8Array, origin: any) => {
       if (origin !== client) {
+        // Broadcast huruf yang baru diketik agar real-time
         client.publish(updateTopic, update as any);
+
+        // FITUR Y-WEBSOCKET: Rekonsiliasi
+        // Kalau server MQTT memblokir paket karena ngetik terlalu cepat (rate-limit),
+        // tunggu sampai jari berhenti ngetik 0.5 detik, lalu tambal layar teman dengan full-state.
+        clearTimeout(syncHealingTimer);
+        syncHealingTimer = setTimeout(() => {
+          const fullState = Y.encodeStateAsUpdate(ydoc);
+          client.publish(updateTopic, fullState as any);
+        }, 500);
       }
     });
 
     // 2. Tangkap pergerakan kursor lokal -> Kirim ke MQTT
     (awareness as any).on("update", ({ added, updated, removed }: { added: number[]; updated: number[]; removed: number[] }, origin: any) => {
-      // Kirim update kursor ke orang lain
       if (origin !== client) {
         const changedClients = added.concat(updated).concat(removed);
         const enc = awarenessProtocol.encodeAwarenessUpdate(awareness, changedClients);
         client.publish(awarenessTopic, enc as any);
       }
-
-      // KUNCI SINKRONISASI MANUALNYA DI SINI:
-      // Jika kita mendeteksi ada user baru masuk (via MQTT),
-      // otomatis kirim seluruh isi text editor kita saat ini ke orang tersebut!
-      if (added.length > 0 && origin === client) {
-        const fullState = Y.encodeStateAsUpdate(ydoc);
-        client.publish(updateTopic, fullState as any);
-      }
+      // Catatan: Trik manual kirim fullState di sini sudah dihapus
+      // karena sudah diganti dengan Sync Protocol yang jauh lebih rapi di atas.
     });
 
     const ytext = ydoc.getText("monaco");
