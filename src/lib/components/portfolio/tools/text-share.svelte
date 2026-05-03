@@ -11,7 +11,7 @@
   interface Props {
     content?: string;
   }
-  let { content = "" }: Props = $props();
+  let { content = $bindable("") }: Props = $props();
 
   // State untuk melacak status koneksi websocket (via MQTT)
   let isConnected = $state(true);

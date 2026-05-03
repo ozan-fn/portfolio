@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Hammer, Link, Share2, Wrench, Copy, ExternalLink, Plus } from "@lucide/svelte";
+  import { Hammer, Link, Share2, Wrench, Copy, ExternalLink, Plus, Upload } from "@lucide/svelte";
   import * as Tabs from "$lib/components/ui/tabs";
   import ToolHeader from "$lib/components/portfolio/tools/tool-header.svelte";
   import ToolPlaceholder from "$lib/components/portfolio/tools/tool-placeholder.svelte";
@@ -63,7 +63,7 @@
 
   <Tabs.Root value="text-share" class="w-full">
     <div class="flex items-center justify-between mb-4 px-0.5">
-      <Tabs.List style="max-width: 400px" class="grid grid-cols-2 w-full h-11 bg-muted/50 p-1 rounded-xl">
+      <Tabs.List class="grid grid-cols-3 w-fit h-11 bg-muted/50 p-1 rounded-xl">
         <Tabs.Trigger value="text-share" class="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all text-xs font-bold uppercase tracking-wider">
           <Share2 class="size-3.5 mr-2" />
           Text Share
@@ -71,6 +71,10 @@
         <Tabs.Trigger value="url-shortener" class="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all text-xs font-bold uppercase tracking-wider">
           <Link class="size-3.5 mr-2" />
           URL Shortener
+        </Tabs.Trigger>
+        <Tabs.Trigger value="file-upload" class="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all text-xs font-bold uppercase tracking-wider">
+          <Upload class="size-3.5 mr-2" />
+          File Upload
         </Tabs.Trigger>
       </Tabs.List>
     </div>
@@ -88,7 +92,7 @@
           };
         }}
       >
-        <TextShare bind:content={textContent} bind:isSubmitting />
+        <TextShare bind:content={textContent} />
       </form>
     </Tabs.Content>
 
@@ -106,6 +110,10 @@
       >
         <UrlShortener bind:longUrl bind:customAlias {isSubmitting} bind:lastGeneratedAlias />
       </form>
+    </Tabs.Content>
+
+    <Tabs.Content value="file-upload" class="mt-0 focus-visible:outline-none">
+      <ToolPlaceholder title="File Temporary Upload" description="Upload file sementara untuk dibagikan. File akan otomatis terhapus setelah waktu tertentu." />
     </Tabs.Content>
   </Tabs.Root>
 </div>
