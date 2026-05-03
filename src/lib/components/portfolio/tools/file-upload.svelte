@@ -5,6 +5,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { toast } from "svelte-sonner";
+  import { getFileUrl } from "$lib/storage.client";
 
   let selectedFile: File | null = $state(null);
   let isUploading = $state(false);
@@ -29,21 +30,34 @@
         const parsed = JSON.parse(stored);
         // Filter out expired files
         const now = new Date();
-        uploadedFiles = parsed.filter((file: any) => new Date(file.expiresAt) > now);
-        // Update localStorage
-        localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
+        const filtered = parsed.filter((file: any) => new Date(file.expiresAt) > now);
+        uploadedFiles = filtered;
+        // Only update localStorage if files were filtered out
+        if (filtered.length !== parsed.length) {
+          localStorage.setItem('uploadedFiles', JSON.stringify(filtered));
+        }
       } catch (e) {
         console.error('Error parsing uploaded files from localStorage:', e);
       }
     }
+  });
 
-    // Cleanup expired files every 5 minutes
+  // Separate effect for cleanup expired files
+  $effect(() => {
     const cleanupInterval = setInterval(() => {
-      const now = new Date();
-      const filtered = uploadedFiles.filter(file => new Date(file.expiresAt) > now);
-      if (filtered.length !== uploadedFiles.length) {
-        uploadedFiles = filtered;
-        localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
+      const stored = localStorage.getItem('uploadedFiles');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          const now = new Date();
+          const filtered = parsed.filter((file: any) => new Date(file.expiresAt) > now);
+          if (filtered.length !== parsed.length) {
+            uploadedFiles = filtered;
+            localStorage.setItem('uploadedFiles', JSON.stringify(filtered));
+          }
+        } catch (e) {
+          console.error('Error cleaning up expired files:', e);
+        }
       }
     }, 5 * 60 * 1000); // 5 minutes
 
@@ -97,66 +111,42 @@
     uploadProgress = 0;
 
     try {
-      // Step 1: Generate presigned URL and create file record
-      const generateResponse = await fetch('/api/upload/generate-url', {
+      // Upload file via API endpoint to avoid CORS issues
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('filename', customFilename || selectedFile.name);
+      formData.append('originalFilename', selectedFile.name);
+      formData.append('fileSize', selectedFile.size.toString());
+      formData.append('mimeType', selectedFile.type || 'application/octet-stream');
+      formData.append('expiryTime', expiryTime);
+      formData.append('password', usePassword ? password : '');
+      formData.append('customFilename', customFilename || selectedFile.name);
+
+      // Upload with progress tracking
+      const uploadResponse = await fetch('/api/upload/file', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filename: customFilename || selectedFile.name,
-          originalFilename: selectedFile.name,
-          fileSize: selectedFile.size,
-          mimeType: selectedFile.type || 'application/octet-stream',
-          expiryTime,
-          password: usePassword ? password : null,
-          customFilename: customFilename || selectedFile.name,
-        }),
+        body: formData,
       });
 
-      if (!generateResponse.ok) {
-        throw new Error('Failed to generate upload URL');
+      // Simple progress simulation since we can't track FormData upload progress easily
+      const progressInterval = setInterval(() => {
+        uploadProgress = Math.min(uploadProgress + 10, 90);
+      }, 200);
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json().catch(() => ({ message: 'Upload failed' }));
+        throw new Error(errorData.message || 'Failed to upload file');
       }
 
-      const { presignedUrl, uploadUrl: fileUploadUrl, fileId, expiresAt } = await generateResponse.json();
+      const result = await uploadResponse.json();
+      clearInterval(progressInterval);
+      uploadProgress = 100;
 
-      // Step 2: Upload file directly to S3 using presigned URL with progress tracking
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
+      const { uploadUrl: fileUploadUrl, fileId, expiresAt } = result;
 
-        xhr.upload.addEventListener('progress', (event) => {
-          if (event.lengthComputable) {
-            uploadProgress = Math.round((event.loaded / event.total) * 100);
-          }
-        });
+      console.log('Upload successful:', { fileUploadUrl, fileId, expiresAt });
 
-        xhr.addEventListener('load', () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve();
-          } else {
-            reject(new Error(`Upload failed with status ${xhr.status}`));
-          }
-        });
-
-        xhr.addEventListener('error', () => {
-          reject(new Error('Upload failed'));
-        });
-
-        xhr.open('PUT', presignedUrl);
-        xhr.setRequestHeader('Content-Type', selectedFile.type || 'application/octet-stream');
-        xhr.send(selectedFile);
-      });
-
-      // Step 3: Complete upload (update database)
-      const completeResponse = await fetch('/api/upload/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileId }),
-      });
-
-      if (!completeResponse.ok) {
-        throw new Error('Failed to complete upload');
-      }
-
-      // Step 4: Add to local history
+      // Add to local history
       const newFile = {
         id: fileId,
         filename: customFilename || selectedFile.name,
@@ -172,12 +162,16 @@
         updatedAt: new Date(),
       };
 
-      uploadedFiles.unshift(newFile);
+      console.log('Adding file to history:', newFile);
+
+      uploadedFiles = [newFile, ...uploadedFiles]; // Use assignment instead of unshift
       localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
 
-      // Generate shareable link
-      const shareableUrl = `${window.location.origin}/api/files/${fileUploadUrl}`;
+      // Generate shareable link using storage client URL
+      const shareableUrl = getFileUrl(fileUploadUrl);
       uploadUrl = shareableUrl;
+
+      console.log('Shareable URL:', shareableUrl);
 
       toast.success("File berhasil diupload!", {
         description: shareableUrl,
@@ -236,7 +230,7 @@
   }
 
   function handleCopyFileLink(uploadUrl: string) {
-    const shareableUrl = `${window.location.origin}/api/files/${uploadUrl}`;
+    const shareableUrl = getFileUrl(uploadUrl);
     navigator.clipboard.writeText(shareableUrl);
     toast.success("Link file disalin!");
   }
