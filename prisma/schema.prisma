@@ -148,6 +148,23 @@ model BlogPost {
     @@map("blog_posts")
 }
 
+model TemporaryFile {
+    id               String   @id @default(cuid())
+    filename         String   // Custom filename or original
+    originalFilename String   // Original uploaded filename
+    filePath         String   // Path to stored file
+    fileSize         Int      // File size in bytes
+    mimeType         String   // MIME type
+    expiryTime       String   // Expiry duration (1h, 24h, 7d, 30d)
+    password         String?  // Optional password protection
+    uploadUrl        String   @unique // Unique URL slug for access
+    expiresAt        DateTime // Calculated expiry datetime
+    createdAt        DateTime @default(now())
+    updatedAt        DateTime @updatedAt
+
+    @@map("temporary_files")
+}
+
 model ShortLink {
     id        String   @id @default(uuid())
     url       String   @db.Text

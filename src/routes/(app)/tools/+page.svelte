@@ -5,6 +5,7 @@
   import ToolPlaceholder from "$lib/components/portfolio/tools/tool-placeholder.svelte";
   import UrlShortener from "$lib/components/portfolio/tools/url-shortener.svelte";
   import TextShare from "$lib/components/portfolio/tools/text-share.svelte";
+  import FileUpload from "$lib/components/portfolio/tools/file-upload.svelte";
   import { enhance } from "$app/forms";
   import { toast } from "svelte-sonner";
 
@@ -113,7 +114,7 @@
     </Tabs.Content>
 
     <Tabs.Content value="file-upload" class="mt-0 focus-visible:outline-none">
-      <ToolPlaceholder title="File Temporary Upload" description="Upload file sementara untuk dibagikan. File akan otomatis terhapus setelah waktu tertentu." />
+      <FileUpload />
     </Tabs.Content>
   </Tabs.Root>
 </div>
