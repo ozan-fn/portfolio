@@ -21,7 +21,8 @@ export async function POST({ request }) {
     }
 
     // Generate unique upload URL slug
-    const uploadUrl = `temp-${randomBytes(8).toString('hex')}-${filename}`;
+    const ext = filename.split('.').pop() || 'bin';
+    const uploadUrl = `tmp/temp-${randomBytes(8).toString('hex')}.${ext}`;
 
     // Calculate expiry datetime
     const getExpiryMs = (expiry: string): number => {

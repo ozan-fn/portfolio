@@ -1,11 +1,17 @@
 <script lang="ts">
-  import { Upload, File as FileIcon, CheckCircle, Clock, Edit, Copy, Trash2 } from "@lucide/svelte";
+  import { Upload, File as FileIcon, CheckCircle, Clock, Copy, Trash2 } from "@lucide/svelte";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { toast } from "svelte-sonner";
   import { getFileUrl } from "$lib/storage.client";
+
+  interface UploadedFile {
+    id: any; filename: string; originalFilename: string; filePath: any;
+    fileSize: number; mimeType: string; expiryTime: string;
+    uploadUrl: any; expiresAt: Date; createdAt: Date; updatedAt: Date;
+  }
 
   let selectedFile: File | null = $state(null);
   let isUploading = $state(false);
@@ -15,11 +21,10 @@
   // Upload options
   let expiryTime = $state("24h");
 
-  let customFilename = $state("");
   let isDragOver = $state(false);
 
   // Uploaded files history (stored in localStorage)
-  let uploadedFiles = $state([]);
+  let uploadedFiles = $state<UploadedFile[]>([]);
 
   // Load uploaded files from localStorage on mount
   $effect(() => {
@@ -67,9 +72,6 @@
     const target = event.target as HTMLInputElement;
     if (target.files && target.files[0]) {
       selectedFile = target.files[0];
-      if (!customFilename) {
-        customFilename = selectedFile.name;
-      }
     }
   }
 
@@ -89,9 +91,6 @@
     const files = event.dataTransfer?.files;
     if (files && files[0]) {
       selectedFile = files[0];
-      if (!customFilename) {
-        customFilename = selectedFile.name;
-      }
     }
   }
 
@@ -105,44 +104,47 @@
     uploadProgress = 0;
 
     try {
-      // Upload file via API endpoint to avoid CORS issues
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('filename', customFilename || selectedFile.name);
-      formData.append('originalFilename', selectedFile.name);
-      formData.append('fileSize', selectedFile.size.toString());
-      formData.append('mimeType', selectedFile.type || 'application/octet-stream');
-      formData.append('expiryTime', expiryTime);
-      formData.append('customFilename', customFilename || selectedFile.name);
-
-      // Upload with progress tracking
-      const uploadResponse = await fetch('/api/upload/file', {
+      const metaResponse = await fetch('/api/upload/generate-url', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: selectedFile.name,
+          originalFilename: selectedFile.name,
+          fileSize: selectedFile.size,
+          mimeType: selectedFile.type || 'application/octet-stream',
+          expiryTime,
+        }),
       });
 
-      // Simple progress simulation since we can't track FormData upload progress easily
-      const progressInterval = setInterval(() => {
-        uploadProgress = Math.min(uploadProgress + 10, 90);
-      }, 200);
-
-      if (!uploadResponse.ok) {
-        const errorData = await uploadResponse.json().catch(() => ({ message: 'Upload failed' }));
-        throw new Error(errorData.message || 'Failed to upload file');
+      if (!metaResponse.ok) {
+        const err = await metaResponse.json().catch(() => ({ message: 'Failed to get upload URL' }));
+        throw new Error(err.message || 'Failed to get upload URL');
       }
 
-      const result = await uploadResponse.json();
-      clearInterval(progressInterval);
+      const { presignedUrl, uploadUrl: fileUploadUrl, fileId, expiresAt } = await metaResponse.json();
+
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('PUT', presignedUrl);
+        xhr.setRequestHeader('Content-Type', selectedFile!.type || 'application/octet-stream');
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            uploadProgress = Math.round((e.loaded / e.total) * 100);
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error(`Upload failed with status ${xhr.status}`));
+        };
+        xhr.onerror = () => reject(new Error('Upload failed'));
+        xhr.send(selectedFile);
+      });
+
       uploadProgress = 100;
 
-      const { uploadUrl: fileUploadUrl, fileId, expiresAt } = result;
-
-      console.log('Upload successful:', { fileUploadUrl, fileId, expiresAt });
-
-      // Add to local history
       const newFile = {
         id: fileId,
-        filename: customFilename || selectedFile.name,
+        filename: selectedFile.name,
         originalFilename: selectedFile.name,
         filePath: fileUploadUrl,
         fileSize: selectedFile.size,
@@ -154,16 +156,11 @@
         updatedAt: new Date(),
       };
 
-      console.log('Adding file to history:', newFile);
-
-      uploadedFiles = [newFile, ...uploadedFiles]; // Use assignment instead of unshift
+      uploadedFiles = [newFile, ...uploadedFiles];
       localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
 
-      // Generate shareable link using storage client URL
       const shareableUrl = getFileUrl(fileUploadUrl);
       uploadUrl = shareableUrl;
-
-      console.log('Shareable URL:', shareableUrl);
 
       toast.success("File berhasil diupload!", {
         description: shareableUrl,
@@ -176,9 +173,7 @@
         },
       });
 
-      // Reset form
       selectedFile = null;
-      customFilename = "";
       uploadProgress = 0;
 
     } catch (error) {
@@ -246,6 +241,7 @@
     <div class="space-y-6">
       <!-- Drag and Drop Area -->
       <div
+        role="region"
         class="border-2 border-dashed rounded-xl p-8 text-center transition-colors {isDragOver ? 'border-primary bg-primary/5' : 'border-muted bg-muted/20'}"
         ondragover={handleDragOver}
         ondragleave={handleDragLeave}
@@ -277,39 +273,21 @@
         {/if}
       </div>
 
-      <!-- Options -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Expiry Time -->
-        <div class="space-y-2">
-          <Label class="flex items-center gap-2 text-sm font-medium">
-            <Clock class="size-4" />
-            Waktu Kadaluarsa
-          </Label>
-          <select
-            bind:value={expiryTime}
-            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={isUploading}
-          >
-            <option value="1h">1 Jam</option>
-            <option value="24h">24 Jam</option>
-            <option value="7d">7 Hari</option>
-            <option value="30d">30 Hari</option>
-          </select>
-        </div>
-
-        <!-- Custom Filename -->
-        <div class="space-y-2">
-          <Label class="flex items-center gap-2 text-sm font-medium">
-            <Edit class="size-4" />
-            Nama File Custom
-          </Label>
-          <Input
-            type="text"
-            placeholder="Opsional"
-            bind:value={customFilename}
-            disabled={isUploading}
-          />
-        </div>
+      <div class="space-y-2">
+        <Label class="flex items-center gap-2 text-sm font-medium">
+          <Clock class="size-4" />
+          Waktu Kadaluarsa
+        </Label>
+        <select
+          bind:value={expiryTime}
+          class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={isUploading}
+        >
+          <option value="1h">1 Jam</option>
+          <option value="24h">24 Jam</option>
+          <option value="7d">7 Hari</option>
+          <option value="30d">30 Hari</option>
+        </select>
       </div>
 
       {#if isUploading}
