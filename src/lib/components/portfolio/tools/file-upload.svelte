@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Upload, File as FileIcon, CheckCircle, Clock, Lock, Edit, Copy, Trash2 } from "@lucide/svelte";
+  import { Upload, File as FileIcon, CheckCircle, Clock, Edit, Copy, Trash2 } from "@lucide/svelte";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
@@ -14,8 +14,7 @@
 
   // Upload options
   let expiryTime = $state("24h");
-  let usePassword = $state(false);
-  let password = $state("");
+
   let customFilename = $state("");
   let isDragOver = $state(false);
 
@@ -102,11 +101,6 @@
       return;
     }
 
-    if (usePassword && !password) {
-      toast.error("Masukkan password untuk proteksi file!");
-      return;
-    }
-
     isUploading = true;
     uploadProgress = 0;
 
@@ -119,7 +113,6 @@
       formData.append('fileSize', selectedFile.size.toString());
       formData.append('mimeType', selectedFile.type || 'application/octet-stream');
       formData.append('expiryTime', expiryTime);
-      formData.append('password', usePassword ? password : '');
       formData.append('customFilename', customFilename || selectedFile.name);
 
       // Upload with progress tracking
@@ -155,7 +148,6 @@
         fileSize: selectedFile.size,
         mimeType: selectedFile.type || 'application/octet-stream',
         expiryTime,
-        password: usePassword ? password : null,
         uploadUrl: fileUploadUrl,
         expiresAt: new Date(expiresAt),
         createdAt: new Date(),
@@ -187,7 +179,6 @@
       // Reset form
       selectedFile = null;
       customFilename = "";
-      password = "";
       uploadProgress = 0;
 
     } catch (error) {
@@ -321,31 +312,6 @@
         </div>
       </div>
 
-      <!-- Password Protection -->
-      <div class="space-y-3">
-        <div class="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            id="password-check"
-            bind:checked={usePassword}
-            disabled={isUploading}
-            class="h-4 w-4 rounded border border-input text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
-          />
-          <Label for="password-check" class="flex items-center gap-2 text-sm font-medium cursor-pointer">
-            <Lock class="size-4" />
-            Proteksi Password
-          </Label>
-        </div>
-        {#if usePassword}
-          <Input
-            type="password"
-            placeholder="Masukkan password"
-            bind:value={password}
-            disabled={isUploading}
-          />
-        {/if}
-      </div>
-
       {#if isUploading}
         <div class="space-y-2">
           <div class="flex justify-between text-sm">
@@ -363,7 +329,7 @@
 
       <Button
         onclick={handleUpload}
-        disabled={!selectedFile || isUploading || (usePassword && !password)}
+        disabled={!selectedFile || isUploading}
         class="w-full"
       >
         {#if isUploading}
@@ -399,9 +365,7 @@
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-2">
                       <p class="font-medium text-sm truncate">{file.filename}</p>
-                      {#if file.password}
-                        <Lock class="size-3 text-muted-foreground" />
-                      {/if}
+
                     </div>
                     <p class="text-xs text-muted-foreground">
                       {formatFileSize(file.fileSize)} • 
