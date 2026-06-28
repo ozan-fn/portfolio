@@ -7,13 +7,15 @@
 
   import type { MonacoBinding as MonacoBindingType } from "y-monaco";
 
-  // Props untuk initial content dari database
   interface Props {
     content?: string;
   }
   let { content = $bindable("") }: Props = $props();
 
   let isReady = $state(false);
+  let isSaving = $state(false);
+  let isConnected = $state(false);
+  let monacoOptions = $derived({ automaticLayout: true, readOnly: !isReady });
 
   let client: mqtt.MqttClient;
   let binding: MonacoBindingType;
@@ -25,43 +27,45 @@
   const roomname = `tes-portfolio-sinkron-123`;
   const updateTopic = `portfolio/monaco/${roomname}/update`;
   const awarenessTopic = `portfolio/monaco/${roomname}/awareness`;
-  // TAMBAHAN: Topic khusus untuk Yjs Sync Protocol (meminta history data)
   const syncReqTopic = `portfolio/monaco/${roomname}/sync-req`;
 
-  // Fungsi untuk save content ke database
   async function saveContent() {
+    if (!ydoc) return;
+    isSaving = true;
     try {
-      const formData = new FormData();
-      formData.append("content", ydoc.getText("monaco").toString());
-
-      const response = await fetch("/tools?/share", {
+      const fd = new FormData();
+      fd.append("content", ydoc.getText("monaco").toString());
+      const res = await fetch("/tools?/share", {
         method: "POST",
-        body: formData,
+        body: fd,
+        keepalive: true,
       });
-
-      if (!response.ok) {
-        console.error("Failed to save content");
-      }
+      if (!res.ok) console.error("Save failed:", await res.text());
     } catch (error) {
       console.error("Save error:", error);
+    } finally {
+      isSaving = false;
     }
   }
 
-  // Fungsi terpisah untuk koneksi MQTT agar bisa dipanggil ulang
   function connectMqtt() {
     client = mqtt.connect("wss://broker.emqx.io:8084/mqtt");
 
     client.on("connect", () => {
+      isConnected = true;
       client.subscribe(updateTopic);
       client.subscribe(awarenessTopic);
       client.subscribe(syncReqTopic);
 
-      // FITUR Y-WEBSOCKET: Sync Step 1
-      // Begitu konek, broadcast "State Vector" kita (kondisi dokumen saat ini)
-      // ke user lain untuk meminta data yang kita lewatkan.
       const stateVector = Y.encodeStateVector(ydoc);
       client.publish(syncReqTopic, stateVector as any);
     });
+
+    client.on("reconnect", () => { isConnected = true; });
+
+    client.on("close", () => { isConnected = false; });
+
+    client.on("offline", () => { isConnected = false; });
 
     client.on("message", (topic, message) => {
       const uint8Msg = new Uint8Array(message as any);
@@ -69,21 +73,18 @@
       if (topic === updateTopic) {
         try {
           Y.applyUpdate(ydoc, uint8Msg, client);
-        } catch (e) {}
+        } catch (e) { console.warn("Yjs applyUpdate error:", e); }
       } else if (topic === awarenessTopic) {
         try {
           awarenessProtocol.applyAwarenessUpdate(awareness, uint8Msg, client);
-        } catch (e) {}
+        } catch (e) { console.warn("Awareness apply error:", e); }
       } else if (topic === syncReqTopic) {
-        // FITUR Y-WEBSOCKET: Sync Step 2
-        // Ada user baru meminta data! Kita bandingkan State Vector dia dengan dokumen kita.
         try {
           const missingUpdate = Y.encodeStateAsUpdate(ydoc, uint8Msg);
-          // Jika kita punya data yang tidak dia miliki (ukuran byte > 2), kirimkan ke dia!
           if (missingUpdate.length > 2) {
             client.publish(updateTopic, missingUpdate as any);
           }
-        } catch (e) {}
+        } catch (e) { console.warn("Sync encode error:", e); }
       }
     });
   }
@@ -95,17 +96,18 @@
     ydoc = new Y.Doc();
     awareness = new awarenessProtocol.Awareness(ydoc);
 
+    const ytext = ydoc.getText("monaco");
+
+    if (content) {
+      ytext.insert(0, content);
+    }
+
     connectMqtt();
 
-    // 1. Tangkap perubahan teks lokal -> Kirim ke MQTT
     (ydoc as any).on("update", (update: Uint8Array, origin: any) => {
       if (origin !== client) {
-        // Broadcast huruf yang baru diketik agar real-time
         client.publish(updateTopic, update as any);
 
-        // FITUR Y-WEBSOCKET: Rekonsiliasi
-        // Kalau server MQTT memblokir paket karena ngetik terlalu cepat (rate-limit),
-        // tunggu sampai jari berhenti ngetik 0.5 detik, lalu tambal layar teman dengan full-state.
         clearTimeout(syncHealingTimer);
         syncHealingTimer = setTimeout(() => {
           const fullState = Y.encodeStateAsUpdate(ydoc);
@@ -113,27 +115,17 @@
         }, 500);
       }
 
-      // Auto-save ke database setiap 2 detik setelah berhenti ngetik
       clearTimeout(saveTimer);
       saveTimer = setTimeout(saveContent, 2000);
     });
 
-    // 2. Tangkap pergerakan kursor lokal -> Kirim ke MQTT
     (awareness as any).on("update", ({ added, updated, removed }: { added: number[]; updated: number[]; removed: number[] }, origin: any) => {
       if (origin !== client) {
         const changedClients = added.concat(updated).concat(removed);
         const enc = awarenessProtocol.encodeAwarenessUpdate(awareness, changedClients);
         client.publish(awarenessTopic, enc as any);
       }
-      // Catatan: Trik manual kirim fullState di sini sudah dihapus
-      // karena sudah diganti dengan Sync Protocol yang jauh lebih rapi di atas.
     });
-
-    const ytext = ydoc.getText("monaco");
-
-    if (content) {
-      ytext.insert(0, content);
-    }
 
     binding = new MonacoBinding(ytext, editor.getModel(), new Set([editor]), awareness);
     isReady = true;
@@ -142,7 +134,6 @@
   onDestroy(() => {
     if (saveTimer) clearTimeout(saveTimer);
     if (syncHealingTimer) clearTimeout(syncHealingTimer);
-    // Save immediately before destroy
     if (ydoc) {
       saveContent();
     }
@@ -152,12 +143,21 @@
 </script>
 
 <div class="editor-wrapper">
+  <div class="flex items-center justify-between gap-2 mb-1">
+    <span class="text-xs text-muted-foreground">
+      {#if !isReady}
+        Loading...
+      {:else if isSaving}
+        Menyimpan...
+      {:else if !isConnected}
+        Terputus — perubahan hanya lokal
+      {:else}
+        Tersimpan
+      {/if}
+    </span>
+  </div>
   <div class="monaco-container">
-    {#if !isReady && content}
-      <div class="flex items-center justify-center h-full text-muted-foreground">Loading...</div>
-    {:else}
-      <Monaco value="" options={{ automaticLayout: true }} theme="vs-dark" on:ready={handleEditorReady} />
-    {/if}
+    <Monaco value="" options={monacoOptions} theme="vs-dark" on:ready={handleEditorReady} />
   </div>
 </div>
 

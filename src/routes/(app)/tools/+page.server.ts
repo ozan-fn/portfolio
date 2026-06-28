@@ -4,9 +4,6 @@ import { fail } from "@sveltejs/kit";
 import { nanoid } from "nanoid";
 
 export const load: PageServerLoad = async ({ cookies }) => {
-  const startTime = Date.now();
-
-  // Basic session-based view limiting
   const hasViewed = cookies.get("text_share_viewed");
 
   const [shortLinks, textShare] = await Promise.all([
@@ -28,17 +25,13 @@ export const load: PageServerLoad = async ({ cookies }) => {
       path: "/",
       httpOnly: true,
       sameSite: "lax",
-      maxAge: 60 * 60, // 1 hour cooldown
+      maxAge: 60 * 60,
     });
   }
-
-  const endTime = Date.now();
 
   return {
     shortLinks,
     textShare: textShare?.content ?? "",
-    views: textShare?.views ?? 0,
-    latency: endTime - startTime,
   };
 };
 

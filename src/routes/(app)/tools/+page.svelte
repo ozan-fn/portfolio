@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Hammer, Link, Share2, Wrench, Copy, ExternalLink, Plus, Upload } from "@lucide/svelte";
+  import { Link, Share2, Wrench, Upload } from "@lucide/svelte";
   import * as Tabs from "$lib/components/ui/tabs";
   import ToolHeader from "$lib/components/portfolio/tools/tool-header.svelte";
   import ToolPlaceholder from "$lib/components/portfolio/tools/tool-placeholder.svelte";
@@ -15,13 +15,9 @@
   let textContent = $state("");
   let isSubmitting = $state(false);
   let lastGeneratedAlias = $state("");
-  let isInitialized = $state(false);
 
-  $effect.pre(() => {
-    if (!isInitialized && data.textShare) {
-      textContent = data.textShare;
-      isInitialized = true;
-    }
+  $effect(() => {
+    if (data.textShare) textContent = data.textShare;
   });
 
   $effect(() => {
