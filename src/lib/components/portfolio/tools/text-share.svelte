@@ -13,8 +13,7 @@
   }
   let { content = $bindable("") }: Props = $props();
 
-  // State untuk melacak status koneksi websocket (via MQTT)
-  let isConnected = $state(true);
+  let isReady = $state(false);
 
   let client: mqtt.MqttClient;
   let binding: MonacoBindingType;
@@ -98,9 +97,6 @@
 
     connectMqtt();
 
-    // Timer untuk fitur Auto-Heal (mencegah teks bolong saat ngetik brutal)
-    let syncHealingTimer: ReturnType<typeof setTimeout>;
-
     // 1. Tangkap perubahan teks lokal -> Kirim ke MQTT
     (ydoc as any).on("update", (update: Uint8Array, origin: any) => {
       if (origin !== client) {
@@ -135,12 +131,12 @@
 
     const ytext = ydoc.getText("monaco");
 
-    // Load initial content dari database
     if (content) {
       ytext.insert(0, content);
     }
 
     binding = new MonacoBinding(ytext, editor.getModel(), new Set([editor]), awareness);
+    isReady = true;
   }
 
   onDestroy(() => {
@@ -157,7 +153,11 @@
 
 <div class="editor-wrapper">
   <div class="monaco-container">
-    <Monaco value="" options={{ automaticLayout: true }} theme="vs-dark" on:ready={handleEditorReady} />
+    {#if !isReady && content}
+      <div class="flex items-center justify-center h-full text-muted-foreground">Loading...</div>
+    {:else}
+      <Monaco value="" options={{ automaticLayout: true }} theme="vs-dark" on:ready={handleEditorReady} />
+    {/if}
   </div>
 </div>
 
