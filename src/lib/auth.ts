@@ -5,7 +5,7 @@ import prisma from "./prisma";
 // import { getRequestEvent } from '$app/server';
 
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL,
+  // baseURL: process.env.BETTER_AUTH_URL,
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
