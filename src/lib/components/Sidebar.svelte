@@ -9,7 +9,7 @@
   import ModeToggle from "$lib/components/mode-toggle.svelte";
 
   // Tambahan icon Menu (garis 3) dan X (close)
-  import { Circle, FolderCode, Gamepad2, Home, Mail, PenTool, Menu, X, Award, Wrench } from "@lucide/svelte";
+  import { Circle, FolderCode, Gamepad2, Home, Mail, PenTool, Menu, X, Award, Wrench, FileUser } from "@lucide/svelte";
 
   import { page } from "$app/state";
   import { onNavigate } from "$app/navigation";
@@ -21,6 +21,7 @@
 
   const menuItems = [
     { id: "home", label: "Home", icon: Home, path: "/" },
+    { id: "cv", label: "CV", icon: FileUser, path: "/cv" },
     { id: "projects", label: "Projects", icon: FolderCode, path: "/projects" },
     { id: "certificates", label: "Certificates", icon: Award, path: "/certificates" },
     { id: "tools", label: "Tools", icon: Wrench, path: "/tools" },
