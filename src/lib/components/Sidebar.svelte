@@ -9,11 +9,11 @@
   import ModeToggle from "$lib/components/mode-toggle.svelte";
 
   // Tambahan icon Menu (garis 3) dan X (close)
-  import { Circle, FolderCode, Gamepad2, Home, Mail, PenTool, Menu, X, Award, Wrench, FileUser } from "@lucide/svelte";
+  import { Circle, FolderCode, Gamepad2, Home, Mail, PenTool, Menu, X, Award, Wrench, FileUser, ChevronLeft } from "@lucide/svelte";
 
   import { page } from "$app/state";
   import { onNavigate } from "$app/navigation";
-  import { motion } from "@humanspeak/svelte-motion";
+  import { motion, AnimatePresence } from "@humanspeak/svelte-motion";
   import { fade } from "svelte/transition";
   import { getFileUrl } from "$lib/storage.client";
 
@@ -21,7 +21,6 @@
 
   const menuItems = [
     { id: "home", label: "Home", icon: Home, path: "/" },
-    { id: "cv", label: "CV", icon: FileUser, path: "/cv" },
     { id: "projects", label: "Projects", icon: FolderCode, path: "/projects" },
     { id: "certificates", label: "Certificates", icon: Award, path: "/certificates" },
     { id: "tools", label: "Tools", icon: Wrench, path: "/tools" },
@@ -94,7 +93,29 @@
             <Circle class="size-3 fill-green-500 text-green-500" />
           </div>
         </div>
-        <h2 class="text-xl font-bold tracking-tight">{user?.name || "Akhmad Fauzan"}</h2>
+        <div class="flex items-center gap-2">
+          <h2 class="text-xl font-bold tracking-tight">{user?.name || "Akhmad Fauzan"}</h2>
+          <a
+            href="/cv"
+            class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold leading-none rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors outline-none"
+          >
+            <FileUser class="size-3.5" />
+            CV
+          </a>
+          <AnimatePresence>
+            {#if activeTab === "cv"}
+              <motion.div
+                key="cv-arrow"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ type: "spring", stiffness: 380, damping: 25 }}
+              >
+                <ChevronLeft class="size-4 text-primary" />
+              </motion.div>
+            {/if}
+          </AnimatePresence>
+        </div>
         <p class="text-[10px] text-muted-foreground font-mono uppercase tracking-[0.2em] mt-1.5 opacity-80">Developer • Purbalingga</p>
       </div>
 
