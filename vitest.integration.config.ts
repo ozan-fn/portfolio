@@ -17,5 +17,7 @@ export default defineConfig({
     testTimeout: 30_000,
     hookTimeout: 30_000,
     sequence: { concurrent: false },
+    // File dijalankan berurutan: test file lain membandingkan jumlah row sebelum/sesudah.
+    fileParallelism: false,
   },
 });

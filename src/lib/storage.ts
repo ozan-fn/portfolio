@@ -10,6 +10,10 @@ const s3Client = new S3Client({
     accessKeyId: env.AWS_ACCESS_KEY_ID || "",
     secretAccessKey: env.AWS_SECRET_ACCESS_KEY || "",
   },
+  // SDK v3.729+ menambahkan checksum ke presigned URL; banyak S3-compatible
+  // (termasuk Tigris) menolaknya. Hanya hitung checksum kalau diminta.
+  requestChecksumCalculation: "WHEN_REQUIRED",
+  responseChecksumValidation: "WHEN_REQUIRED",
 });
 
 const BUCKET_NAME = env.AWS_BUCKET_NAME || "zan68";
