@@ -153,12 +153,11 @@ describe("tools/share", () => {
     });
   });
 
-  it("rejects an anonymous write", async () => {
+  it("lets anonymous visitors write (public buffer)", async () => {
     const res = await share({ content: "hello" }, {});
 
-    expect(res.status).toBe(401);
-    expect(upsert).not.toHaveBeenCalled();
-    expect(updateMany).not.toHaveBeenCalled();
+    expect(res).toEqual({ success: true });
+    expect(upsert).toHaveBeenCalledOnce();
   });
 
   it("compare-and-swaps against the base content the author saw", async () => {
@@ -206,12 +205,12 @@ describe("tools/load text share room", () => {
     textShareFindUnique.mockReset().mockResolvedValue({ content: "shared" });
   });
 
-  it("sends the collaboration room only to logged-in users", async () => {
+  it("gives every visitor the collaboration room", async () => {
     const guest = await loadPage({});
     const owner = await loadPage({ user: { id: "u1" } });
 
-    expect(guest.room).toBeNull();
-    expect(owner.room).toEqual(expect.any(String));
+    expect(guest.room).toEqual(expect.any(String));
+    expect(owner.room).toBe(guest.room);
   });
 
   it("keeps the text readable for guests", async () => {

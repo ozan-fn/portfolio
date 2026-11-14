@@ -38,19 +38,13 @@ export const load: PageServerLoad = async ({ cookies, isDataRequest, locals }) =
   return {
     shortLinks,
     textShare: textShare?.content ?? "",
-    // Room MQTT hanya dikirim ke user yang login, jadi tamu tidak bisa
-    // ikut menyambung ke room kolaborasi walau membaca bundle JS.
-    room: locals.user ? TEXT_SHARE_ROOM : null,
+    // Text share memang buffer publik: siapa pun boleh ikut mengedit.
+    room: TEXT_SHARE_ROOM,
   };
 };
 
 export const actions: Actions = {
-  share: async ({ request, locals }) => {
-    // Text share bisa ditimpa siapa saja kalau endpoint ini terbuka.
-    if (!locals.user) {
-      return fail(401, { message: "Login dulu untuk menyimpan text share" });
-    }
-
+  share: async ({ request }) => {
     const formData = await request.formData();
     const parsed = validateTextShareContent(formData.get("content"));
 

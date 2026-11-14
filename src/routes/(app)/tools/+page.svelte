@@ -8,8 +8,24 @@
   import FileUpload from "$lib/components/portfolio/tools/file-upload.svelte";
   import { enhance } from "$app/forms";
   import { toast } from "svelte-sonner";
+  import { onMount } from "svelte";
 
   let { data, form } = $props();
+
+  // Tab terakhir diingat di localStorage.
+  const TAB_KEY = "tools:active-tab";
+  const TABS = ["text-share", "url-shortener", "file-upload"];
+  let activeTab = $state("text-share");
+
+  onMount(() => {
+    const saved = localStorage.getItem(TAB_KEY);
+    if (saved && TABS.includes(saved)) activeTab = saved;
+  });
+
+  $effect(() => {
+    if (TABS.includes(activeTab)) localStorage.setItem(TAB_KEY, activeTab);
+  });
+
   let longUrl = $state("");
   let customAlias = $state("");
   let textContent = $state("");
@@ -58,7 +74,7 @@
     {/snippet}
   </ToolHeader>
 
-  <Tabs.Root value="text-share" class="w-full">
+  <Tabs.Root bind:value={activeTab} class="w-full">
     <div class="flex items-center justify-between mb-4 px-0.5">
       <Tabs.List class="grid grid-cols-3 w-fit h-11 bg-muted/50 p-1 rounded-xl">
         <Tabs.Trigger value="text-share" class="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all text-xs font-bold uppercase tracking-wider">
