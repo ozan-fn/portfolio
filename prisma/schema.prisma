@@ -157,11 +157,13 @@ model TemporaryFile {
     mimeType         String   // MIME type
     expiryTime       String   // Expiry duration (1h, 24h, 7d, 30d)
     password         String?  // Optional password protection
+    fileHash         String?  @db.VarChar(64) // SHA-256 konten, untuk dedupe
     uploadUrl        String   @unique // Unique URL slug for access
     expiresAt        DateTime // Calculated expiry datetime
     createdAt        DateTime @default(now())
     updatedAt        DateTime @updatedAt
 
+    @@index([fileHash])
     @@map("temporary_files")
 }
 
@@ -173,6 +175,16 @@ model ShortLink {
     updatedAt DateTime @updatedAt
 
     @@map("short_links")
+}
+
+model AiSetting {
+    id        String   @id @default("singleton")
+    baseUrl   String   @db.Text
+    model     String   @db.VarChar(100)
+    apiKey    String   @db.Text
+    updatedAt DateTime @updatedAt
+
+    @@map("ai_settings")
 }
 
 model TextShare {

@@ -1,21 +1,16 @@
 import { json, error } from '@sveltejs/kit';
 import prisma from '$lib/prisma';
 
-export async function GET({ url }) {
-  try {
-    const limit = parseInt(url.searchParams.get('limit') || '10');
-    const offset = parseInt(url.searchParams.get('offset') || '0');
+export async function GET({ url, locals }) {
+  if (!locals.user) throw error(401, 'Unauthorized');
 
-    // Get recent uploads that haven't expired
+  const limit = Math.min(Math.max(Number(url.searchParams.get('limit')) || 10, 1), 100);
+  const offset = Math.max(Number(url.searchParams.get('offset')) || 0, 0);
+
+  try {
     const files = await prisma.temporaryFile.findMany({
-      where: {
-        expiresAt: {
-          gt: new Date(),
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      where: { expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: 'desc' },
       take: limit,
       skip: offset,
       select: {
@@ -28,22 +23,18 @@ export async function GET({ url }) {
         uploadUrl: true,
         expiresAt: true,
         createdAt: true,
-        password: true, // Include to check if protected
+        password: true, // only used to derive isProtected below
       },
     });
 
-    // Format file sizes
-    const formattedFiles = files.map(file => ({
+    // Password tidak boleh ikut terkirim ke klien.
+    const formattedFiles = files.map(({ password, ...file }) => ({
       ...file,
       fileSizeFormatted: formatFileSize(file.fileSize),
-      isProtected: !!file.password,
+      isProtected: !!password,
     }));
 
-    return json({
-      success: true,
-      files: formattedFiles,
-    });
-
+    return json({ success: true, files: formattedFiles });
   } catch (err) {
     console.error('Error fetching upload history:', err);
     throw error(500, 'Failed to fetch upload history');

@@ -21,8 +21,11 @@ export function formatDate(date: Date | string) {
 }
 
 export function calculateReadTime(content: string): string {
+    const text = content.trim();
+    if (!text) return '0 min read';
+
     const wordsPerMinute = 200;
-    const words = content.trim().split(/\s+/).length;
+    const words = text.split(/\s+/).length;
     const minutes = Math.ceil(words / wordsPerMinute);
     return `${minutes} min read`;
 }

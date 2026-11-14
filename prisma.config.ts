@@ -10,6 +10,8 @@ export default defineConfig({
     seed: 'tsx prisma/seed.ts',
   },
   datasource: {
-    url: process.env['DATABASE_URL'],
+    // CLI (db push/migrate) butuh koneksi session; pooler transaksi (port 6543)
+    // menggantung dengan "prepared statement already exists".
+    url: process.env['DIRECT_URL'] || process.env['DATABASE_URL'],
   },
 });

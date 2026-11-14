@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "$env/dynamic/private";
 
@@ -15,11 +15,12 @@ const s3Client = new S3Client({
 const BUCKET_NAME = env.AWS_BUCKET_NAME || "zan68";
 
 /**
- * Helper untuk menghapus file dari storage berdasarkan Key
- * Biar gak numpuk sampah di bucket dek.
+ * Helper untuk menghapus file dari storage berdasarkan Key.
+ * Mengembalikan false kalau gagal, supaya pemanggil bisa membatalkan
+ * penghapusan record DB dan file tidak jadi orphan.
  */
-export async function deleteFile(key: string | null | undefined) {
-  if (!key) return;
+export async function deleteFile(key: string | null | undefined): Promise<boolean> {
+  if (!key) return true;
 
   try {
     let finalKey = key;
@@ -30,7 +31,7 @@ export async function deleteFile(key: string | null | undefined) {
       finalKey = url.pathname.substring(1);
     }
 
-    if (!finalKey) return;
+    if (!finalKey) return true;
 
     const command = new DeleteObjectCommand({
       Bucket: BUCKET_NAME,
@@ -38,9 +39,18 @@ export async function deleteFile(key: string | null | undefined) {
     });
 
     await s3Client.send(command);
+    return true;
   } catch (error) {
     console.error("Gagal hapus file di storage dek:", error);
+    return false;
   }
+}
+
+/** Stream an object from storage (used to serve private/temporary files). */
+export async function getObject(key: string) {
+  return await s3Client.send(
+    new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key }),
+  );
 }
 
 /**

@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
-  import { LayoutDashboard, Briefcase, FileText, Settings, LogOut, User, Tag, Award } from "@lucide/svelte";
+  import { LayoutDashboard, Briefcase, FileText, Settings, LogOut, User, Tag, Award, Sparkles } from "@lucide/svelte";
   import ModeToggle from "$lib/components/mode-toggle.svelte";
   import { authClient } from "$lib/auth-client";
   import { goto } from "$app/navigation";
@@ -31,6 +31,11 @@
       title: "Categories",
       url: "/dashboard/categories",
       icon: Tag,
+    },
+    {
+      title: "AI Settings",
+      url: "/dashboard/ai",
+      icon: Sparkles,
     },
     {
       title: "Settings",

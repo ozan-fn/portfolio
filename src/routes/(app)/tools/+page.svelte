@@ -89,7 +89,7 @@
           };
         }}
       >
-        <TextShare bind:content={textContent} />
+        <TextShare bind:content={textContent} room={data.room} />
       </form>
     </Tabs.Content>
 

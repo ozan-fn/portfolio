@@ -16,6 +16,7 @@
 
   // Profile State
   let name = $state("");
+  let email = $state("");
   let previewUrl = $state("");
   let fileInput: HTMLInputElement;
 
@@ -28,6 +29,7 @@
   $effect(() => {
     if (data.user) {
       name = data.user.name || "";
+      email = data.user.email || "";
       previewUrl = getFileUrl(data.user.image);
     }
   });
@@ -163,11 +165,32 @@
             </div>
             <div class="space-y-2">
               <Label for="email">Email Address</Label>
-              <Input id="email" type="email" value={data.user?.email} disabled class="bg-muted/50 cursor-not-allowed" />
+              <Input id="email" name="email" type="email" bind:value={email} placeholder="email@kamu.com" disabled={isLoading} />
+              <p class="text-[10px] italic text-muted-foreground">Pakai tombol "Simpan Email" untuk mengubahnya.</p>
+            </div>
+            <div class="space-y-2">
+              <Label for="currentPasswordEmail">Password Sekarang (konfirmasi ganti email)</Label>
+              <Input
+                id="currentPasswordEmail"
+                name="currentPassword"
+                type="password"
+                autocomplete="current-password"
+                placeholder="••••••••"
+                disabled={isLoading}
+              />
             </div>
           </Card.Content>
-          <Card.Footer class="border-t ">
-            <Button type="submit" disabled={isLoading} class="ml-auto font-bold min-w-[140px]">
+          <Card.Footer class="border-t flex gap-2 justify-end">
+            <Button
+              type="submit"
+              formaction="?/updateEmail"
+              variant="outline"
+              disabled={isLoading}
+              class="font-bold min-w-[140px]"
+            >
+              {isLoading ? "Nyimpen..." : "Simpan Email"}
+            </Button>
+            <Button type="submit" disabled={isLoading} class="font-bold min-w-[140px]">
               {isLoading ? "Nyimpen..." : "Simpan Nama"}
             </Button>
           </Card.Footer>

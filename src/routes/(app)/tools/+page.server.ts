@@ -2,25 +2,31 @@ import prisma from "$lib/prisma";
 import type { PageServerLoad, Actions } from "./$types";
 import { fail } from "@sveltejs/kit";
 import { nanoid } from "nanoid";
+import { loadTextShare, saveTextShare, validateTextShareContent } from "$lib/text-share";
 
-export const load: PageServerLoad = async ({ cookies }) => {
+// Alias harus aman dipakai sebagai satu segmen URL dan tidak boleh
+// menabrak route aplikasi (hooks hanya redirect kalau route tidak ada).
+const TEXT_SHARE_ROOM = "tes-portfolio-sinkron-123";
+const ALIAS_PATTERN = /^[a-zA-Z0-9_-]{1,50}$/;
+const RESERVED_ALIASES = new Set([
+  "login", "dashboard", "tools", "blog", "projects", "certificates",
+  "contact", "cv", "game", "api", "_app", "favicon.ico", "robots.txt",
+]);
+
+export const load: PageServerLoad = async ({ cookies, isDataRequest, locals }) => {
   const hasViewed = cookies.get("text_share_viewed");
+  // Cuma full page load yang dihitung view, bukan prefetch/invalidate.
+  const countView = !hasViewed && !isDataRequest;
 
   const [shortLinks, textShare] = await Promise.all([
     prisma.shortLink.findMany({
       orderBy: { createdAt: "desc" },
       take: 10,
     }),
-    hasViewed
-      ? prisma.textShare.findUnique({ where: { id: "singleton" } })
-      : prisma.textShare.upsert({
-          where: { id: "singleton" },
-          update: { views: { increment: 1 } },
-          create: { id: "singleton", content: "", views: 1 },
-        }),
+    loadTextShare(countView),
   ]);
 
-  if (!hasViewed) {
+  if (countView) {
     cookies.set("text_share_viewed", "true", {
       path: "/",
       httpOnly: true,
@@ -32,26 +38,35 @@ export const load: PageServerLoad = async ({ cookies }) => {
   return {
     shortLinks,
     textShare: textShare?.content ?? "",
+    // Room MQTT hanya dikirim ke user yang login, jadi tamu tidak bisa
+    // ikut menyambung ke room kolaborasi walau membaca bundle JS.
+    room: locals.user ? TEXT_SHARE_ROOM : null,
   };
 };
 
 export const actions: Actions = {
-  share: async ({ request }) => {
-    const formData = await request.formData();
-    const content = formData.get("content") as string;
-
-    if (content === null) {
-      return fail(400, { message: "Content is required" });
+  share: async ({ request, locals }) => {
+    // Text share bisa ditimpa siapa saja kalau endpoint ini terbuka.
+    if (!locals.user) {
+      return fail(401, { message: "Login dulu untuk menyimpan text share" });
     }
 
+    const formData = await request.formData();
+    const parsed = validateTextShareContent(formData.get("content"));
+
+    if (!parsed.ok) {
+      return fail(400, { message: parsed.message });
+    }
+
+    const base = formData.get("base");
+
     try {
-      const result = await prisma.$transaction(async (tx) => {
-        return await tx.textShare.upsert({
-          where: { id: "singleton" },
-          update: { content },
-          create: { id: "singleton", content },
+      const result = await saveTextShare(parsed.content, typeof base === "string" ? base : undefined);
+      if (result === "conflict") {
+        return fail(409, {
+          message: "Teks sudah diubah di tempat lain. Muat ulang halaman sebelum menyimpan lagi.",
         });
-      });
+      }
       return { success: true };
     } catch (error) {
       console.error("TextShare Error:", error);
@@ -84,6 +99,15 @@ export const actions: Actions = {
     let finalSlug = alias?.trim();
 
     if (finalSlug) {
+      if (!ALIAS_PATTERN.test(finalSlug)) {
+        return fail(400, {
+          message: "Alias hanya boleh huruf, angka, - dan _ (maks 50 karakter)",
+        });
+      }
+      if (RESERVED_ALIASES.has(finalSlug.toLowerCase())) {
+        return fail(400, { message: "Alias sudah dipakai halaman lain" });
+      }
+
       // Check if alias already exists
       const existing = await prisma.shortLink.findUnique({
         where: { alias: finalSlug },

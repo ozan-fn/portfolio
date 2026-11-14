@@ -5,13 +5,17 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { toast } from "svelte-sonner";
-  import { getFileUrl } from "$lib/storage.client";
+  import { sha256Hex } from "$lib/upload-file";
 
   interface UploadedFile {
     id: any; filename: string; originalFilename: string; filePath: any;
     fileSize: number; mimeType: string; expiryTime: string;
     uploadUrl: any; expiresAt: Date; createdAt: Date; updatedAt: Date;
+    deleteToken?: string;
   }
+
+  // File sementara selalu diakses lewat app, supaya expiry & password dicek.
+  const accessUrl = (uploadUrl: string) => `/api/files/${uploadUrl}`;
 
   let selectedFile: File | null = $state(null);
   let isUploading = $state(false);
@@ -104,6 +108,9 @@
     uploadProgress = 0;
 
     try {
+      // Hash dihitung di browser: file identik tidak perlu diupload ulang.
+      const fileHash = await sha256Hex(selectedFile).catch(() => undefined);
+
       const metaResponse = await fetch('/api/upload/generate-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -113,6 +120,7 @@
           fileSize: selectedFile.size,
           mimeType: selectedFile.type || 'application/octet-stream',
           expiryTime,
+          fileHash,
         }),
       });
 
@@ -121,9 +129,9 @@
         throw new Error(err.message || 'Failed to get upload URL');
       }
 
-      const { presignedUrl, uploadUrl: fileUploadUrl, fileId, expiresAt } = await metaResponse.json();
+      const { presignedUrl, uploadUrl: fileUploadUrl, fileId, deleteToken, expiresAt, deduped } = await metaResponse.json();
 
-      await new Promise<void>((resolve, reject) => {
+      if (!deduped) await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open('PUT', presignedUrl);
         xhr.setRequestHeader('Content-Type', selectedFile!.type || 'application/octet-stream');
@@ -154,15 +162,16 @@
         expiresAt: new Date(expiresAt),
         createdAt: new Date(),
         updatedAt: new Date(),
+        deleteToken,
       };
 
       uploadedFiles = [newFile, ...uploadedFiles];
       localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
 
-      const shareableUrl = getFileUrl(fileUploadUrl);
+      const shareableUrl = `${location.origin}${accessUrl(fileUploadUrl)}`;
       uploadUrl = shareableUrl;
 
-      toast.success("File berhasil diupload!", {
+      toast.success(deduped ? "File identik sudah ada — URL baru dibuat!" : "File berhasil diupload!", {
         description: shareableUrl,
         action: {
           label: "Copy Link",
@@ -194,10 +203,11 @@
     }
   }
 
-  async function handleDeleteFile(fileId: string) {
+  async function handleDeleteFile(file: UploadedFile) {
     try {
-      const response = await fetch(`/api/upload/${fileId}`, {
+      const response = await fetch(`/api/upload/${file.id}`, {
         method: 'DELETE',
+        headers: file.deleteToken ? { 'x-upload-token': file.deleteToken } : {},
       });
 
       if (!response.ok) {
@@ -205,7 +215,7 @@
       }
 
       // Remove from local state and storage
-      uploadedFiles = uploadedFiles.filter(f => f.id !== fileId);
+      uploadedFiles = uploadedFiles.filter(f => f.id !== file.id);
       localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
 
       toast.success("File berhasil dihapus!");
@@ -216,7 +226,7 @@
   }
 
   function handleCopyFileLink(uploadUrl: string) {
-    const shareableUrl = getFileUrl(uploadUrl);
+    const shareableUrl = `${location.origin}${accessUrl(uploadUrl)}`;
     navigator.clipboard.writeText(shareableUrl);
     toast.success("Link file disalin!");
   }
@@ -355,7 +365,7 @@
                   <Button variant="ghost" size="sm" onclick={() => handleCopyFileLink(file.uploadUrl)}>
                     <Copy class="size-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" onclick={() => handleDeleteFile(file.id)}>
+                  <Button variant="ghost" size="sm" onclick={() => handleDeleteFile(file)}>
                     <Trash2 class="size-4" />
                   </Button>
                 </div>

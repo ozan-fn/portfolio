@@ -1,70 +1,122 @@
-import { json, error } from '@sveltejs/kit';
+import { json, error, isHttpError } from '@sveltejs/kit';
 import { getPresignedUploadUrl } from '$lib/storage';
+import { hashPassword } from '$lib/password';
+import { createUploadToken } from '$lib/upload-token';
+import { buildStorageKey, extensionOf, HASH_PATTERN, randomStorageKey, withRandomSuffix } from '$lib/upload-file';
+import { env } from '$env/dynamic/private';
 import prisma from '$lib/prisma';
 import { randomBytes } from 'crypto';
 
-export async function POST({ request }) {
-  try {
-    const {
-      filename,
-      originalFilename,
-      fileSize,
-      mimeType,
-      expiryTime,
-      password,
-      customFilename
-    } = await request.json();
+const EXPIRY_MS: Record<string, number> = {
+  '1h': 3_600_000,
+  '24h': 86_400_000,
+  '7d': 604_800_000,
+  '30d': 2_592_000_000,
+};
 
-    // Validasi input
-    if (!filename || !fileSize || !mimeType) {
-      throw error(400, 'Missing required fields');
+export async function POST({ request }) {
+  const body = await request.json().catch(() => null);
+  if (!body) throw error(400, 'Invalid JSON body');
+
+  const {
+    filename,
+    originalFilename,
+    fileSize,
+    mimeType,
+    expiryTime = '24h',
+    password,
+    customFilename,
+    fileHash,
+  } = body;
+
+  // Validasi di luar try, supaya error 400 tidak tertelan jadi 500.
+  if (!filename || typeof filename !== 'string') throw error(400, 'Missing required fields');
+  if (!Number.isInteger(fileSize) || fileSize <= 0) throw error(400, 'Invalid file size');
+  if (!mimeType || typeof mimeType !== 'string') throw error(400, 'Missing required fields');
+  if (!(expiryTime in EXPIRY_MS)) throw error(400, 'Invalid expiry time');
+
+  const hash =
+    typeof fileHash === 'string' && fileHash.trim() ? fileHash.trim().toLowerCase() : undefined;
+  if (hash && !HASH_PATTERN.test(hash)) throw error(400, 'Invalid file hash');
+
+  const ext = extensionOf(filename);
+  const expiresAt = new Date(Date.now() + EXPIRY_MS[expiryTime]);
+  const displayName = customFilename || filename;
+
+  try {
+    // File identik yang belum expired: URL & masa berlaku baru, tanpa upload ulang.
+    const existing = hash
+      ? await prisma.temporaryFile.findFirst({
+          where: { fileHash: hash, expiresAt: { gt: new Date() } },
+          orderBy: { createdAt: 'desc' },
+        })
+      : null;
+
+    if (existing) {
+      const duplicate = await prisma.temporaryFile.create({
+        data: {
+          filename: withRandomSuffix(displayName),
+          originalFilename: originalFilename || filename,
+          filePath: existing.filePath,
+          fileSize,
+          mimeType,
+          expiryTime,
+          password: password ? hashPassword(String(password)) : null,
+          fileHash: hash,
+          uploadUrl: tempUrl(ext),
+          expiresAt,
+        },
+      });
+
+      return json({
+        success: true,
+        deduped: true,
+        uploadUrl: duplicate.uploadUrl,
+        fileId: duplicate.id,
+        deleteToken: createUploadToken(duplicate.id, env.BETTER_AUTH_SECRET || ''),
+        expiresAt: duplicate.expiresAt,
+      });
     }
 
-    // Generate unique upload URL slug
-    const ext = filename.split('.').pop() || 'bin';
-    const uploadUrl = `tmp/temp-${randomBytes(8).toString('hex')}.${ext}`;
+    // Key dibuat dari nama file + hash; hanya fallback ke key acak untuk klien lama.
+    const storageKey = hash
+      ? buildStorageKey(filename, hash)
+      : randomStorageKey(ext, () => randomBytes(8).toString('hex'));
 
-    // Calculate expiry datetime
-    const getExpiryMs = (expiry: string): number => {
-      switch (expiry) {
-        case '1h': return 3600000;
-        case '24h': return 24 * 3600000;
-        case '7d': return 7 * 24 * 3600000;
-        case '30d': return 30 * 24 * 3600000;
-        default: return 24 * 3600000;
-      }
-    };
+    const presignedUrl = await getPresignedUploadUrl(storageKey, mimeType);
 
-    const expiresAt = new Date(Date.now() + getExpiryMs(expiryTime || '24h'));
-
-    // Generate presigned URL for direct upload to S3
-    const presignedUrl = await getPresignedUploadUrl(uploadUrl, mimeType);
-
-    // Save file metadata to database
     const fileRecord = await prisma.temporaryFile.create({
       data: {
-        filename: customFilename || filename,
-        originalFilename,
-        filePath: uploadUrl, // This will be the S3 key
+        filename: displayName,
+        originalFilename: originalFilename || filename,
+        filePath: storageKey,
         fileSize,
         mimeType,
-        expiryTime: expiryTime || '24h',
-        password: password || null,
-        uploadUrl,
+        expiryTime,
+        password: password ? hashPassword(String(password)) : null,
+        fileHash: hash ?? null,
+        uploadUrl: tempUrl(ext),
         expiresAt,
       },
     });
 
     return json({
       success: true,
+      deduped: false,
       presignedUrl,
-      uploadUrl,
+      uploadUrl: fileRecord.uploadUrl,
       fileId: fileRecord.id,
+      deleteToken: createUploadToken(fileRecord.id, env.BETTER_AUTH_SECRET || ''),
       expiresAt: fileRecord.expiresAt,
     });
-
   } catch (err) {
+    if (isHttpError(err)) throw err;
     console.error('Error generating upload URL:', err);
     throw error(500, 'Failed to generate upload URL');
   }
+}
+
+/** Slug akses berbagi (bukan nama file di storage). */
+function tempUrl(ext: string) {
+  return `tmp/temp-${randomBytes(8).toString('hex')}.${ext}`;
 }

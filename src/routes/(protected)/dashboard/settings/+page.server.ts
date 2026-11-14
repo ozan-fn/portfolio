@@ -1,7 +1,10 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { uploadImage, deleteFile } from '$lib/storage';
+import { auth } from '$lib/auth';
 import prisma from '$lib/prisma';
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const load: PageServerLoad = async ({ locals }) => {
     return {
@@ -28,6 +31,56 @@ export const actions: Actions = {
 
             return { success: true, message: 'Nama berhasil diupdate! Makin tamvan.' };
         } catch (e) {
+            return fail(500, { message: 'DB lagi pusing, coba lagi nanti dek.' });
+        }
+    },
+
+    updateEmail: async ({ request, locals }) => {
+        if (!locals.user) return fail(401, { message: 'Gak ada session, login dulu dek.' });
+
+        const formData = await request.formData();
+        const email = String(formData.get('email') ?? '').trim().toLowerCase();
+        const currentPassword = String(formData.get('currentPassword') ?? '');
+
+        if (!EMAIL_PATTERN.test(email)) {
+            return fail(400, { message: 'Format email-nya gak bener dek.' });
+        }
+        if (email === locals.user.email.toLowerCase()) {
+            return fail(400, { message: 'Email-nya sama kayak yang sekarang dek.' });
+        }
+        if (!currentPassword) {
+            return fail(400, { message: 'Isi password sekarang buat konfirmasi ganti email.' });
+        }
+
+        try {
+            // Konfirmasi password, bukan flow changeEmail better-auth yang
+            // butuh pengiriman email verifikasi (project ini tanpa mailer).
+            await auth.api.verifyPassword({
+                body: { password: currentPassword },
+                headers: request.headers,
+            });
+        } catch {
+            return fail(400, { message: 'Password sekarang salah.' });
+        }
+
+        try {
+            const taken = await prisma.user.findFirst({
+                where: { email, NOT: { id: locals.user.id } },
+                select: { id: true },
+            });
+            if (taken) {
+                return fail(400, { message: 'Email itu sudah dipakai akun lain.' });
+            }
+
+            // Email baru belum terverifikasi sampai dibuktikan pemiliknya.
+            await prisma.user.update({
+                where: { id: locals.user.id },
+                data: { email, emailVerified: false },
+            });
+
+            return { success: true, message: 'Email berhasil diganti!' };
+        } catch (e) {
+            console.error('Change email error:', e);
             return fail(500, { message: 'DB lagi pusing, coba lagi nanti dek.' });
         }
     },

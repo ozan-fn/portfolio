@@ -4,10 +4,11 @@
   import CrudFormLayout from "$lib/components/admin/crud-form-layout.svelte";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
-  import { Globe, Lock, X, Check, Plus, Loader2 } from "@lucide/svelte";
+  import { Globe, Lock, X, Check, Plus, Loader2, Sparkles } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { badgeVariants } from "$lib/components/ui/badge";
   import { invalidateAll } from "$app/navigation";
+  import { toast } from "svelte-sonner";
 
   let { data }: { data: PageData } = $props();
 
@@ -15,6 +16,42 @@
   let isCreatingCategory = $state(false);
   let isPublished = $state(false);
   let title = $state("");
+
+  // AI: isi content otomatis dari brief singkat.
+  let content = $state("");
+  let aiBrief = $state("");
+  let isGenerating = $state(false);
+
+  async function generateWithAi() {
+    if (!aiBrief.trim() || isGenerating) return;
+
+    isGenerating = true;
+    try {
+      const res = await fetch("/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: [
+            title && `Judul: ${title}`,
+            tags.length > 0 && `Tags: ${tags.join(", ")}`,
+            `Brief: ${aiBrief}`,
+          ]
+            .filter(Boolean)
+            .join("\n"),
+        }),
+      });
+
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(payload.message || "Gagal memanggil AI");
+
+      content = payload.text;
+      toast.success("Konten diisi AI. Periksa sebelum publish.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal memanggil AI");
+    } finally {
+      isGenerating = false;
+    }
+  }
 
   // Category search/select
   let categorySearch = $state("");
@@ -180,11 +217,38 @@
         <Input id="image" name="image" type="file" accept="image/*" onchange={handleFileChange} />
       </div>
 
+      <div class="grid gap-2 rounded-xl border bg-muted/30 p-4">
+        <Label for="ai-brief" class="flex items-center gap-2">
+          <Sparkles size={14} />
+          Isi dengan AI
+        </Label>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <Input
+            id="ai-brief"
+            bind:value={aiBrief}
+            placeholder="Brief singkat, mis. 'kenapa saya pindah dari Next.js ke SvelteKit'"
+          />
+          <Button type="button" variant="secondary" onclick={generateWithAi} disabled={isGenerating || !aiBrief.trim()} class="gap-2 shrink-0">
+            {#if isGenerating}
+              <Loader2 size={16} class="animate-spin" />
+              Menulis...
+            {:else}
+              <Sparkles size={16} />
+              Generate
+            {/if}
+          </Button>
+        </div>
+        <p class="text-[11px] text-muted-foreground italic">
+          Judul dan tags ikut dikirim sebagai konteks. Hasil menimpa isi editor. Atur endpoint di Dashboard → AI Settings.
+        </p>
+      </div>
+
       <div class="grid gap-2">
         <Label for="content">Content (Markdown or HTML)</Label>
         <textarea
           id="content"
           name="content"
+          bind:value={content}
           rows="20"
           placeholder="Write your amazing story here..."
           required
