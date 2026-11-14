@@ -5,7 +5,8 @@ import {
   HASH_PATTERN,
   randomStorageKey,
   sha256Hex,
-  withRandomSuffix,
+  suffixDigitsFor,
+  withNumberSuffix,
 } from "./upload-file";
 
 const hash = "a".repeat(64);
@@ -39,17 +40,45 @@ describe("buildStorageKey", () => {
   });
 });
 
-describe("withRandomSuffix", () => {
-  it("adds a number before the extension", () => {
-    expect(withRandomSuffix("photo.jpg", () => 0.4821)).toBe("photo-5338.jpg");
+describe("suffixDigitsFor", () => {
+  it("uses one digit for the first duplicates", () => {
+    expect(suffixDigitsFor(0)).toBe(1);
+    expect(suffixDigitsFor(9)).toBe(1);
+  });
+
+  it("uses two digits from 10 duplicates", () => {
+    expect(suffixDigitsFor(10)).toBe(2);
+    expect(suffixDigitsFor(99)).toBe(2);
+  });
+
+  it("uses three digits from 100 duplicates", () => {
+    expect(suffixDigitsFor(100)).toBe(3);
+    expect(suffixDigitsFor(4321)).toBe(3);
+  });
+});
+
+describe("withNumberSuffix", () => {
+  it("adds a single digit before the extension", () => {
+    expect(withNumberSuffix("photo.jpg", 1, () => 0)).toBe("photo-1.jpg");
+    expect(withNumberSuffix("photo.jpg", 1, () => 0.999)).toBe("photo-9.jpg");
+  });
+
+  it("adds two digits when there are already many duplicates", () => {
+    expect(withNumberSuffix("photo.jpg", 2, () => 0)).toBe("photo-10.jpg");
+    expect(withNumberSuffix("photo.jpg", 2, () => 0.999)).toBe("photo-99.jpg");
+  });
+
+  it("adds three digits when duplicates are plentiful", () => {
+    expect(withNumberSuffix("photo.jpg", 3, () => 0)).toBe("photo-100.jpg");
+    expect(withNumberSuffix("photo.jpg", 3, () => 0.999)).toBe("photo-999.jpg");
   });
 
   it("appends at the end when there is no extension", () => {
-    expect(withRandomSuffix("README", () => 0)).toBe("README-1000");
+    expect(withNumberSuffix("README", 1, () => 0)).toBe("README-1");
   });
 
   it("keeps the extension intact", () => {
-    expect(withRandomSuffix("archive.tar.gz", () => 0.5)).toBe("archive.tar-5500.gz");
+    expect(withNumberSuffix("archive.tar.gz", 1, () => 0)).toBe("archive.tar-1.gz");
   });
 });
 

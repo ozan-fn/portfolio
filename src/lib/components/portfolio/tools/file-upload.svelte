@@ -150,6 +150,19 @@
 
       uploadProgress = 100;
 
+      // Minta server memverifikasi objeknya benar-benar ada di storage.
+      if (!deduped) {
+        const completeRes = await fetch('/api/upload/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileId, deleteToken }),
+        });
+        if (!completeRes.ok) {
+          const payload = await completeRes.json().catch(() => ({}));
+          throw new Error(payload.message || 'Upload tidak terverifikasi di storage');
+        }
+      }
+
       const newFile = {
         id: fileId,
         filename: selectedFile.name,
@@ -187,7 +200,7 @@
 
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error("Gagal upload file. Silakan coba lagi.");
+      toast.error(error instanceof Error ? error.message : "Gagal upload file. Silakan coba lagi.");
     } finally {
       isUploading = false;
     }

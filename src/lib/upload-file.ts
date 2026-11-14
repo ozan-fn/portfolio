@@ -8,10 +8,24 @@ const splitExtension = (filename: string) => {
   return { base, ext, hasExt: !!match };
 };
 
-/** `photo.jpg` → `photo-4821.jpg` (angka acak sebelum extension). */
-export function withRandomSuffix(filename: string, random: () => number = Math.random): string {
+/** Panjang angka suffix mengikuti banyaknya duplikat: 1 → 1 digit, 10 → 2 digit, 100 → 3 digit. */
+export function suffixDigitsFor(duplicates: number): 1 | 2 | 3 {
+  if (duplicates >= 100) return 3;
+  if (duplicates >= 10) return 2;
+  return 1;
+}
+
+/** `photo.jpg` → `photo-7.jpg` (1 digit), `photo-42.jpg` (2), `photo-421.jpg` (3). */
+export function withNumberSuffix(
+  filename: string,
+  digits: 1 | 2 | 3 = 1,
+  random: () => number = Math.random,
+): string {
   const { base, ext, hasExt } = splitExtension(filename);
-  const number = Math.floor(random() * 9000) + 1000;
+  const min = digits === 1 ? 1 : digits === 2 ? 10 : 100;
+  const max = digits === 1 ? 9 : digits === 2 ? 99 : 999;
+  const number = min + Math.floor(random() * (max - min + 1));
+
   return hasExt ? `${base}-${number}.${ext}` : `${filename}-${number}`;
 }
 
@@ -32,6 +46,20 @@ export function buildStorageKey(filename: string, hash: string): string {
     .slice(0, MAX_BASE_LENGTH);
 
   return `tmp/${slug || "file"}-${hash.slice(0, 8)}.${ext.slice(0, MAX_EXT_LENGTH)}`;
+}
+
+/** `photo.jpg` → `tmp/photo-a1b2c3d4.jpg` (nama upload + id acak). */
+export function buildAccessPath(filename: string, randomHex: string): string {
+  const { base, ext } = splitExtension(filename);
+
+  const slug = base
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, MAX_BASE_LENGTH);
+
+  return `tmp/${slug || "file"}-${randomHex.slice(0, 8)}.${ext.slice(0, MAX_EXT_LENGTH)}`;
 }
 
 /** Dipakai kalau klien lama tidak mengirim hash. */

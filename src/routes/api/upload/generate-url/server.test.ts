@@ -3,13 +3,15 @@ import { env } from "$env/dynamic/private";
 
 const create = vi.fn();
 const findFirst = vi.fn();
+const count = vi.fn();
 const getPresignedUploadUrl = vi.fn();
+const headObject = vi.fn();
 
 vi.mock("$lib/prisma", () => ({
-  default: { temporaryFile: { create, findFirst } },
+  default: { temporaryFile: { create, findFirst, count } },
 }));
 
-vi.mock("$lib/storage", () => ({ getPresignedUploadUrl }));
+vi.mock("$lib/storage", () => ({ getPresignedUploadUrl, headObject }));
 
 const { POST } = await import("./+server");
 const { verifyUploadToken } = await import("$lib/upload-token");
@@ -36,6 +38,8 @@ describe("POST /api/upload/generate-url", () => {
   beforeEach(() => {
     create.mockReset().mockImplementation(async ({ data }: any) => ({ id: "file-1", ...data }));
     findFirst.mockReset().mockResolvedValue(null);
+    count.mockReset().mockResolvedValue(0);
+    headObject.mockReset().mockResolvedValue({ exists: true, size: 1234 });
     getPresignedUploadUrl.mockReset().mockResolvedValue("https://signed.example/put");
   });
 
@@ -62,7 +66,8 @@ describe("POST /api/upload/generate-url", () => {
 
     const data = create.mock.calls[0][0].data;
     expect(data.filePath).toMatch(/^tmp\/temp-[a-f0-9]{16}\.bin$/);
-    expect(data.uploadUrl).toMatch(/^tmp\/temp-[a-f0-9]{16}\.bin$/);
+    // URL akses ikut nama file, bukan nama acak
+    expect(data.uploadUrl).toMatch(/^tmp\/etc-passwd-[a-f0-9]{8}\.bin$/);
   });
 
   it("names the storage key from the uploaded filename and hash", async () => {
@@ -73,8 +78,8 @@ describe("POST /api/upload/generate-url", () => {
     const data = create.mock.calls[0][0].data;
     expect(data.filePath).toBe("tmp/laporan-q3-abababab.pdf");
     expect(data.fileHash).toBe(hash);
-    // slug akses tetap terpisah dari nama file
-    expect(data.uploadUrl).toMatch(/^tmp\/temp-[a-f0-9]{16}\.pdf$/);
+    // slug akses juga memakai nama file
+    expect(data.uploadUrl).toMatch(/^tmp\/laporan-q3-[a-f0-9]{8}\.pdf$/);
   });
 
   it("rejects a malformed hash with 400", async () => {
@@ -85,6 +90,7 @@ describe("POST /api/upload/generate-url", () => {
   it("reuses the stored object for an identical, unexpired file", async () => {
     const hash = "ab".repeat(32);
     findFirst.mockResolvedValue({ filePath: "tmp/photo-11112222.png", expiresAt: new Date() });
+    headObject.mockResolvedValue({ exists: true, size: 1234 });
 
     const body = await (await post({ ...valid, fileHash: hash, expiryTime: "7d" })).json();
 
@@ -95,11 +101,40 @@ describe("POST /api/upload/generate-url", () => {
     const data = create.mock.calls[0][0].data;
     expect(data.filePath).toBe("tmp/photo-11112222.png");
     expect(data.fileHash).toBe(hash);
-    // nama file diberi angka acak supaya tidak kembar dengan record lama
-    expect(data.filename).toMatch(/^photo-\d{4}\.png$/);
+    // nama file diberi angka supaya tidak kembar dengan record lama
+    expect(data.filename).toMatch(/^photo-\d{1}\.png$/);
 
     const days = (new Date(body.expiresAt).getTime() - Date.now()) / 86_400_000;
     expect(days).toBeCloseTo(7, 1);
+  });
+
+  it("uses two digits once there are 10 duplicates", async () => {
+    findFirst.mockResolvedValue({ filePath: "tmp/photo-11112222.png", expiresAt: new Date() });
+    count.mockResolvedValue(12);
+
+    await post({ ...valid, fileHash: "ab".repeat(32) });
+
+    expect(create.mock.calls[0][0].data.filename).toMatch(/^photo-\d{2}\.png$/);
+  });
+
+  it("uses three digits once there are 100 duplicates", async () => {
+    findFirst.mockResolvedValue({ filePath: "tmp/photo-11112222.png", expiresAt: new Date() });
+    count.mockResolvedValue(150);
+
+    await post({ ...valid, fileHash: "ab".repeat(32) });
+
+    expect(create.mock.calls[0][0].data.filename).toMatch(/^photo-\d{3}\.png$/);
+  });
+
+  it("does not dedupe to an object that is missing in storage", async () => {
+    findFirst.mockResolvedValue({ filePath: "tmp/hilang.png", expiresAt: new Date() });
+    headObject.mockResolvedValue({ exists: false, size: null });
+
+    const body = await (await post({ ...valid, fileHash: "ab".repeat(32) })).json();
+
+    expect(body.deduped).toBe(false);
+    expect(body.presignedUrl).toBe("https://signed.example/put");
+    expect(create.mock.calls[0][0].data.filePath).not.toBe("tmp/hilang.png");
   });
 
   it("only dedupes against files that have not expired", async () => {

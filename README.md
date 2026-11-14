@@ -39,7 +39,7 @@ pnpm dev
 
 - Upload: browser → Tigris langsung dengan presigned PUT (`POST /api/upload/generate-url`).
 - Nama file di storage mengikuti nama yang diupload + 8 karakter hash, mis. `tmp/laporan-q3-ab12cd34.pdf` — bukan nama acak.
-- Hash SHA-256 dihitung **di browser** sebelum meminta presigned URL. Kalau file identik masih ada dan belum expired: tidak ada upload ulang, dapat URL baru, masa berlaku baru, dan nama file diberi angka acak sebelum extension (`laporan-q3-4821.pdf`) supaya tidak kembar di daftar.
+- Hash SHA-256 dihitung **di browser** sebelum meminta presigned URL. Kalau file identik masih ada dan belum expired: tidak ada upload ulang, dapat URL baru, masa berlaku baru, dan nama file diberi angka sebelum extension supaya tidak kembar di daftar. Panjang angkanya ikut jumlah duplikat: 1 digit (1–9) sampai 9 duplikat, 2 digit (10–99) mulai 10 duplikat, 3 digit (100–999) mulai 100 duplikat — mis. `laporan-q3-1.pdf` → `laporan-q3-42.pdf` → `laporan-q3-421.pdf`.
 - Akses: `/api/files/<key>` langsung redirect ke Tigris. File dengan password di-stream lewat app supaya proteksinya tidak bisa dilewati.
 - Hapus: `DELETE /api/upload/<fileId>` (butuh login atau header `x-upload-token`).
 - Expired file dibersihkan oleh cronjob (lihat bawah). Cek `expiresAt` di route akses tetap ada sebagai pengaman.
@@ -97,4 +97,15 @@ Catatan:
 | `pnpm dev` | Dev server |
 | `pnpm build` / `pnpm preview` | Build & preview produksi |
 | `pnpm check` | Typecheck Svelte + TS |
-| `pnpm test` | Unit test (Vitest) |
+| `pnpm test` | Unit test — offline, tidak menyentuh DB/Tigris |
+| `pnpm test:integration` | Integration test — baca `.env`, **read-only** (hanya SELECT + HEAD) |
+
+### Integration test
+
+Letaknya terpisah dari unit test: `tests/integration/`, config `vitest.integration.config.ts`.
+
+- `database.test.ts` — koneksi DB, semua tabel fitur bisa dibaca, tabel `ai_settings` & kolom `file_hash` ada, query cron & dedupe berjalan, view text share tidak bertambah saat dibaca.
+- `storage.test.ts` — `headObject` untuk objek yang ada dan yang tidak ada, plus URL publik bucket benar-benar 200.
+- `files-route.test.ts` — `/api/files/[...uploadUrl]`: 302 ke Tigris untuk file aktif, 404 untuk key tak dikenal, 410 untuk record expired, 401 + form password untuk file terproteksi.
+
+Tidak ada operasi tulis: tidak ada `create`/`update`/`delete`, tidak ada PUT/DELETE ke Tigris.

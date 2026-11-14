@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "$env/dynamic/private";
 
@@ -43,6 +43,18 @@ export async function deleteFile(key: string | null | undefined): Promise<boolea
   } catch (error) {
     console.error("Gagal hapus file di storage dek:", error);
     return false;
+  }
+}
+
+/** Cek apakah objek benar-benar ada (dipakai sebelum dedupe / setelah upload). */
+export async function headObject(key: string): Promise<{ exists: boolean; size: number | null }> {
+  try {
+    const res = await s3Client.send(new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
+    return { exists: true, size: res.ContentLength ?? null };
+  } catch (error) {
+    const name = (error as { name?: string }).name;
+    if (name === "NotFound" || name === "NoSuchKey") return { exists: false, size: null };
+    throw error;
   }
 }
 

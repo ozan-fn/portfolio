@@ -1,8 +1,8 @@
 import { json, error, isHttpError } from '@sveltejs/kit';
-import { getPresignedUploadUrl } from '$lib/storage';
+import { getPresignedUploadUrl, headObject } from '$lib/storage';
 import { hashPassword } from '$lib/password';
 import { createUploadToken } from '$lib/upload-token';
-import { buildStorageKey, extensionOf, HASH_PATTERN, randomStorageKey, withRandomSuffix } from '$lib/upload-file';
+import { buildAccessPath, buildStorageKey, extensionOf, HASH_PATTERN, randomStorageKey, suffixDigitsFor, withNumberSuffix } from '$lib/upload-file';
 import { env } from '$env/dynamic/private';
 import prisma from '$lib/prisma';
 import { randomBytes } from 'crypto';
@@ -45,17 +45,21 @@ export async function POST({ request }) {
 
   try {
     // File identik yang belum expired: URL & masa berlaku baru, tanpa upload ulang.
-    const existing = hash
+    // Objeknya harus benar-benar ada, kalau tidak link-nya jadi mati.
+    const candidate = hash
       ? await prisma.temporaryFile.findFirst({
           where: { fileHash: hash, expiresAt: { gt: new Date() } },
           orderBy: { createdAt: 'desc' },
         })
       : null;
+    const existing = candidate && (await headObject(candidate.filePath)).exists ? candidate : null;
 
     if (existing) {
+      // Panjang angka pada nama mengikuti jumlah duplikat file yang sama.
+      const duplicates = await prisma.temporaryFile.count({ where: { fileHash: hash } });
       const duplicate = await prisma.temporaryFile.create({
         data: {
-          filename: withRandomSuffix(displayName),
+          filename: withNumberSuffix(displayName, suffixDigitsFor(duplicates)),
           originalFilename: originalFilename || filename,
           filePath: existing.filePath,
           fileSize,
@@ -63,7 +67,7 @@ export async function POST({ request }) {
           expiryTime,
           password: password ? hashPassword(String(password)) : null,
           fileHash: hash,
-          uploadUrl: tempUrl(ext),
+          uploadUrl: buildAccessPath(displayName, randomBytes(4).toString('hex')),
           expiresAt,
         },
       });
@@ -95,7 +99,7 @@ export async function POST({ request }) {
         expiryTime,
         password: password ? hashPassword(String(password)) : null,
         fileHash: hash ?? null,
-        uploadUrl: tempUrl(ext),
+        uploadUrl: buildAccessPath(displayName, randomBytes(4).toString('hex')),
         expiresAt,
       },
     });
@@ -114,9 +118,4 @@ export async function POST({ request }) {
     console.error('Error generating upload URL:', err);
     throw error(500, 'Failed to generate upload URL');
   }
-}
-
-/** Slug akses berbagi (bukan nama file di storage). */
-function tempUrl(ext: string) {
-  return `tmp/temp-${randomBytes(8).toString('hex')}.${ext}`;
 }
