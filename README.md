@@ -85,6 +85,8 @@ Panggil tiap 10 menit. Contoh dengan `crontab` di server:
 
 Atau layanan cron eksternal (cron-job.org, GitHub Actions schedule) yang menembak URL yang sama.
 
+**Penting untuk cron-job.org / layanan sejenis:** pakai method **GET**, atau POST dengan header `Content-Type: application/json`. POST dengan content-type form tanpa `Origin` ditolak SvelteKit dengan `403 Cross-site POST form submissions are forbidden` — itu proteksi CSRF, bukan error endpoint. Kalau kena rate limit, balasannya `429` + `Retry-After`.
+
 Catatan:
 
 - Rate limit disimpan di memori proses. Kalau app dijalankan lebih dari satu instance, tiap instance menghitung sendiri — pindah ke Redis/Upstash sebelum scale out.
