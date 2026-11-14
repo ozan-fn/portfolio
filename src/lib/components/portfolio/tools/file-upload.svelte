@@ -11,10 +11,10 @@
     id: any; filename: string; originalFilename: string; filePath: any;
     fileSize: number; mimeType: string; expiryTime: string;
     uploadUrl: any; expiresAt: Date; createdAt: Date; updatedAt: Date;
-    deleteToken?: string;
+    deleteToken?: string; shareUrl?: string;
   }
 
-  // File sementara selalu diakses lewat app, supaya expiry & password dicek.
+  // Fallback untuk record lama yang belum menyimpan shareUrl.
   const accessUrl = (uploadUrl: string) => `/api/files/${uploadUrl}`;
 
   let selectedFile: File | null = $state(null);
@@ -129,7 +129,8 @@
         throw new Error(err.message || 'Failed to get upload URL');
       }
 
-      const { presignedUrl, uploadUrl: fileUploadUrl, fileId, deleteToken, expiresAt, deduped } = await metaResponse.json();
+      const { presignedUrl, uploadUrl: fileUploadUrl, shareUrl, fileId, deleteToken, expiresAt, deduped } =
+        await metaResponse.json();
 
       if (!deduped) await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -176,12 +177,13 @@
         createdAt: new Date(),
         updatedAt: new Date(),
         deleteToken,
+        shareUrl,
       };
 
       uploadedFiles = [newFile, ...uploadedFiles];
       localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
 
-      const shareableUrl = `${location.origin}${accessUrl(fileUploadUrl)}`;
+      const shareableUrl = shareUrl ?? `${location.origin}${accessUrl(fileUploadUrl)}`;
       uploadUrl = shareableUrl;
 
       toast.success(deduped ? "File identik sudah ada — URL baru dibuat!" : "File berhasil diupload!", {
@@ -238,8 +240,8 @@
     }
   }
 
-  function handleCopyFileLink(uploadUrl: string) {
-    const shareableUrl = `${location.origin}${accessUrl(uploadUrl)}`;
+  function handleCopyFileLink(file: UploadedFile) {
+    const shareableUrl = file.shareUrl ?? `${location.origin}${accessUrl(file.uploadUrl)}`;
     navigator.clipboard.writeText(shareableUrl);
     toast.success("Link file disalin!");
   }
@@ -375,7 +377,7 @@
                   </div>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
-                  <Button variant="ghost" size="sm" onclick={() => handleCopyFileLink(file.uploadUrl)}>
+                  <Button variant="ghost" size="sm" onclick={() => handleCopyFileLink(file)}>
                     <Copy class="size-4" />
                   </Button>
                   <Button variant="ghost" size="sm" onclick={() => handleDeleteFile(file)}>

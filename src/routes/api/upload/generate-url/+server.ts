@@ -1,5 +1,6 @@
 import { json, error, isHttpError } from '@sveltejs/kit';
 import { getPresignedUploadUrl, headObject } from '$lib/storage';
+import { getFileUrl } from '$lib/storage.client';
 import { hashPassword } from '$lib/password';
 import { createUploadToken } from '$lib/upload-token';
 import { buildAccessPath, buildStorageKey, extensionOf, HASH_PATTERN, randomStorageKey, suffixDigitsFor, withNumberSuffix } from '$lib/upload-file';
@@ -76,6 +77,9 @@ export async function POST({ request }) {
         success: true,
         deduped: true,
         uploadUrl: duplicate.uploadUrl,
+        // Tanpa password, tautan yang dibagikan langsung ke Tigris. Dengan
+        // password, harus lewat app supaya proteksinya bisa dicek.
+        shareUrl: password ? `/api/files/${duplicate.uploadUrl}` : getFileUrl(duplicate.filePath),
         fileId: duplicate.id,
         deleteToken: createUploadToken(duplicate.id, env.BETTER_AUTH_SECRET || ''),
         expiresAt: duplicate.expiresAt,
@@ -109,6 +113,7 @@ export async function POST({ request }) {
       deduped: false,
       presignedUrl,
       uploadUrl: fileRecord.uploadUrl,
+      shareUrl: password ? `/api/files/${fileRecord.uploadUrl}` : getFileUrl(fileRecord.filePath),
       fileId: fileRecord.id,
       deleteToken: createUploadToken(fileRecord.id, env.BETTER_AUTH_SECRET || ''),
       expiresAt: fileRecord.expiresAt,

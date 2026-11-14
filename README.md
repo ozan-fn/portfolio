@@ -40,7 +40,8 @@ pnpm dev
 - Upload: browser → Tigris langsung dengan presigned PUT (`POST /api/upload/generate-url`).
 - Nama file di storage mengikuti nama yang diupload + 8 karakter hash, mis. `tmp/laporan-q3-ab12cd34.pdf` — bukan nama acak.
 - Hash SHA-256 dihitung **di browser** sebelum meminta presigned URL. Kalau file identik masih ada dan belum expired: tidak ada upload ulang, dapat URL baru, masa berlaku baru, dan nama file diberi angka sebelum extension supaya tidak kembar di daftar. Panjang angkanya ikut jumlah duplikat: 1 digit (1–9) sampai 9 duplikat, 2 digit (10–99) mulai 10 duplikat, 3 digit (100–999) mulai 100 duplikat — mis. `laporan-q3-1.pdf` → `laporan-q3-42.pdf` → `laporan-q3-421.pdf`.
-- Akses: `/api/files/<key>` langsung redirect ke Tigris. File dengan password di-stream lewat app supaya proteksinya tidak bisa dilewati.
+- Tautan yang dibagikan (`shareUrl` dari `generate-url`) adalah **URL Tigris langsung** untuk file tanpa password. File ber-password memakai `/api/files/<slug>` dan di-stream lewat app supaya proteksinya tidak bisa dilewati.
+- `/api/files/<slug>` tetap tersedia untuk kompatibilitas: 302 ke Tigris, dengan cek `expiresAt` di sisi app. Untuk tautan Tigris langsung, masa berlaku hanya dijaga cronjob.
 - Hapus: `DELETE /api/upload/<fileId>` (butuh login atau header `x-upload-token`).
 - Expired file dibersihkan oleh cronjob (lihat bawah). Cek `expiresAt` di route akses tetap ada sebagai pengaman.
 

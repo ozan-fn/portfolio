@@ -106,6 +106,7 @@ describe("POST /api/upload/generate-url", () => {
 
     const days = (new Date(body.expiresAt).getTime() - Date.now()) / 86_400_000;
     expect(days).toBeCloseTo(7, 1);
+    expect(body.shareUrl).toBe("https://zan68.t3.tigrisfiles.io/tmp/photo-11112222.png");
   });
 
   it("uses two digits once there are 10 duplicates", async () => {
@@ -144,6 +145,20 @@ describe("POST /api/upload/generate-url", () => {
       fileHash: "ab".repeat(32),
       expiresAt: { gt: expect.any(Date) },
     });
+  });
+
+  it("shares the direct Tigris url for a file without a password", async () => {
+    const body = await (await post({ ...valid, fileHash: "ab".repeat(32) })).json();
+
+    expect(body.shareUrl).toBe(
+      "https://zan68.t3.tigrisfiles.io/tmp/photo-abababab.png",
+    );
+  });
+
+  it("shares the app url when a password is set", async () => {
+    const body = await (await post({ ...valid, password: "rahasia" })).json();
+
+    expect(body.shareUrl).toMatch(/^\/api\/files\/tmp\/photo-[a-f0-9]{8}\.png$/);
   });
 
   it("stores a hash instead of the plaintext password", async () => {

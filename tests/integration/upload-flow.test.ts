@@ -45,6 +45,8 @@ describe.skipIf(!enabled)("alur temp file end-to-end", () => {
     expect(generated.deduped).toBe(false);
     // key storage mengikuti nama upload + hash
     expect(generated.uploadUrl).toMatch(/^tmp\/it-\d+-[a-f0-9]{8}\.txt$/);
+    // tanpa password, tautan yang dibagikan langsung ke Tigris
+    expect(generated.shareUrl).toMatch(/^https:\/\/zan68\.t3\.tigrisfiles\.io\/tmp\/it-\d+-[a-f0-9]{8}\.txt$/);
 
     const record = await prisma.temporaryFile.findUnique({ where: { id: generated.fileId } });
     expect(record).not.toBeNull();
@@ -84,6 +86,7 @@ describe.skipIf(!enabled)("alur temp file end-to-end", () => {
     const direct = await fetch(redirect.location);
     expect(direct.status).toBe(200);
     expect(await direct.text()).toBe(content);
+    expect(redirect.location).toBe(generated.shareUrl);
 
     // 5. hapus (pakai token kepemilikan)
     const delRes = await deleteUpload({
